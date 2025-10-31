@@ -1,0 +1,17 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* Variables */
+
+:root {
+    --COLOR-BLACK: #01161E;
+    --COLOR-BLUE: #124559;
+}
+
+body {
+    background-color: var(--COLOR-BLUE);
+}
