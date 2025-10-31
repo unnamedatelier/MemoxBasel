@@ -10,7 +10,8 @@ async def init(number: int):
     filename = f"{number}.json"
     with open(filename, "w") as f:
         json.dump({"uid": number, "inputs": []}, f)
-    return {"message": f"Datei {filename} erstellt"}
+    response.status_code = 200
+    return Response(status_code=200)
 
 @app.post("/input")
 async def add_input(request: Request):
