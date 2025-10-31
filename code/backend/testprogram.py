@@ -19,11 +19,9 @@ inputs = [
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 embeddings = embedder.encode(inputs)
 
-n_clusters = 3
-kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-labels = kmeans.fit_predict(embeddings)
-
-kw_model = KeyBERT(model=embedder)
+n_clusters = int(len(inputs)/2) #custom formula for n_clusters; int(len(inputs)/2)
+kmeans = KMeans(n_clusters=n_clusters, random_state=42) 
+labels, kw_model = kmeans.fit_predict(embeddings), KeyBERT(model=embedder)
 
 cluster_themes = {}
 for cluster_id in range(n_clusters):
@@ -42,9 +40,8 @@ themes = list(set(themes))
 classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 
 
-def generate_output(inputs, themes, top_results=5):
-    classifieroutput = {}
-    newlabels = []
+def generate_output(inputs, themes, top_results=5): #top_results higher -> less accurate but more general
+    classifieroutput, newlabels = {}, []
 
     for input in inputs:
         classifieroutput.update({input : classifier(input, themes)})
@@ -52,7 +49,6 @@ def generate_output(inputs, themes, top_results=5):
     
     counter = Counter(newlabels)
     newlabels = sorted(newlabels, key=counter.get, reverse=True)
-
     newlabels = list(set(newlabels))
 
     matches = {newlabel : [] for newlabel in newlabels}
