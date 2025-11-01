@@ -3,6 +3,14 @@
   "topic_uid": "science-notes",
   "inputs": [
     "Newton's First Law: An object at rest stays at rest",
-    "E = mc\u00b2"
-  ]
+    "E = mc²"
+  ],
+  "formatted": {
+    "Newtons": [
+      "Newton's First Law: An object at rest stays at rest"
+    ],
+    "General Topics": [
+      "E = mc²"
+    ]
+  }
 }
