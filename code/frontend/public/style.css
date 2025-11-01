@@ -13,5 +13,26 @@
 }
 
 body {
-    background-color: var(--COLOR-BLUE);
+    background: linear-gradient(135deg, var(--COLOR-BLUE) 0%, var(--COLOR-BLACK) 100%);
 }
+
+/* positioning */
+
+body h1 {
+    position: relative;
+    top: 25vh;
+    display: flex;
+    justify-content: center;
+}
+
+div.join-create {
+    position: relative;
+    top: 50vh;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+/* button styling */
+
+
+

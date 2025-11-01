@@ -11,14 +11,15 @@
     <h1>Website Name</h1>
 
     <div class="join-create">
-        <a href="index_uid.html">
-            <button id="join-btn">Join Conference</button>
-            <input type="text" placeholder="Conference Name" required>
-        </a>
-        <a href="index_admin.html">
-            <button type="submit">Create Conference</button>
-            <input type="text" placeholder="Conference Name" required>
-        </a>
+        <form action="">
+            <button id="join-btn" onclick="joinConference()">Join Conference</button>
+            <input type="text" placeholder="Conference Name">
+        </form>
+        <form action="">
+            <a href="">
+            <button type="submit" onclick="createConference()">Create Conference</button>   
+            <input type="text" placeholder="Conference Name">
+        </form>
     </div>
 </body>
 </html>
