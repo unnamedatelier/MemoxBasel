@@ -2,15 +2,17 @@
   "session_uid": "test-session-456",
   "topic_uid": "math-notes",
   "inputs": [
-    "Pythagorean theorem: a² + b² = c²",
-    "Quadratic formula: x = (-b ± √(b²-4ac)) / 2a"
+    "Pythagorean theorem: a\u00b2 + b\u00b2 = c\u00b2",
+    "Quadratic formula: x = (-b \u00b1 \u221a(b\u00b2-4ac)) / 2a"
   ],
   "formatted": {
-    "Pythagorean": [
-      "Pythagorean theorem: a² + b² = c²"
+    "Entertainment And Media": [
+      "The Beatles revolutionized the music industry with their innovative sound and style.",
+      "Metallica's influence on heavy metal music is undeniable, with a legacy spanning decades."
     ],
-    "Quadratic": [
-      "Quadratic formula: x = (-b ± √(b²-4ac)) / 2a"
+    "Entertainment And GUGUS": [
+      "The Beatles revolutionized the music industry with their innovative sound and style.",
+      "Metallica's influence on heavy metal music is undeniable, with a legacy spanning decades."
     ]
   }
 }

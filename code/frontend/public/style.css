@@ -1,67 +1,92 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-/* Variables */
-:root {
-    --COLOR-BLACK: #01161E;
-    --COLOR-BLUE: #124559;
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
 
-body {
-    background: linear-gradient(135deg, var(--COLOR-BLUE) 0%, var(--COLOR-BLACK) 100%);
-    min-height: 100vh;
-    color: white;
-}
+        h1 {
+            text-align: center;
+            color: #222;
+            margin-bottom: 50px;
+            font-size: 32px;
+            font-weight: 600;
+        }
 
-/* positioning */
-body h1 {
-    position: relative;
-    top: 25vh;
-    display: flex;
-    justify-content: center;
-}
+        .join-create {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-div.join-create {
-    position: relative;
-    top: 50vh;
-    display: flex;
-    justify-content: space-evenly;
-}
+        .session-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
 
-.session-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-}
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fafafa;
+            transition: background 0.2s;
+            margin-bottom: 15px;
+        }
 
-/* Input and Button styling */
-input[type="text"] {
-    padding: 0.5rem 1rem;
-    border: 2px solid var(--COLOR-BLUE);
-    border-radius: 4px;
-    font-size: 1rem;
-    width: 200px;
-}
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ddd;
+            background: white;
+        }
 
-button {
-    padding: 0.5rem 1rem;
-    background-color: var(--COLOR-BLUE);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    width: 200px;
-    transition: background-color 0.2s;
-}
+        input[type="text"]::placeholder {
+            color: #999;
+        }
 
-button:hover {
-    background-color: #1a5b73;
-}
+        button {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 16px;
+            font-weight: 500;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
 
+        button:hover {
+            background: #222;
+        }
 
+        button:active {
+            transform: translateY(1px);
+        }
 
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 30px;
+            }
+
+            .session-form {
+                padding: 20px;
+            }
+        }
