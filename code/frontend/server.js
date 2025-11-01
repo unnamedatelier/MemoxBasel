@@ -5,7 +5,7 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Ordner leeren beim Booten
 const conferencesPath = path.join(__dirname, 'public', 'conferences');
