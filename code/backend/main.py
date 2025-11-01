@@ -9,15 +9,12 @@ def categorize_texts(inputs, n_clusters=None):
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = embedder.encode(inputs)
     
-    if n_clusters is None:
-        n_clusters = max(2, len(inputs) // 3)
+    if n_clusters is None: n_clusters = max(2, len(inputs) // 3)
     
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     labels = kmeans.fit_predict(embeddings)
     
-    classifier = pipeline("zero-shot-classification", 
-                         model="facebook/bart-large-mnli",
-                         device=-1)
+    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli",device=-1)
     
     results = {}
     
@@ -29,8 +26,7 @@ def categorize_texts(inputs, n_clusters=None):
         
         title = generate_title_from_cluster(cluster_texts, classifier)
         
-        original_title = title
-        counter = 1
+        original_title, counter = title, 1
         while title in results:
             title = f"{original_title} ({counter})"
             counter += 1
