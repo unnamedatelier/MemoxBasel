@@ -4,8 +4,12 @@ from fastapi.responses import JSONResponse
 import json
 import os
 from datetime import datetime
+import requests
 
 app = FastAPI()
+
+# Frontend server URL
+FRONTEND_URL = "http://localhost:3000"
 
 # Ensure sessions_folder exists
 SESSIONS_FOLDER = "sessions_folder"
@@ -169,7 +173,7 @@ async def end_topic(request: Request):
 
 @app.post("/notify-update")
 async def notify_update(request: Request):
-    """Receive notification that a topic has been processed"""
+    """Receive notification that a topic has been processed and forward to frontend"""
     data = await request.json()
     session_uid = data.get("session_uid")
     topic_uid = data.get("topic_uid")
@@ -187,10 +191,63 @@ async def notify_update(request: Request):
         "timestamp": datetime.now().isoformat()
     })
     
-    return JSONResponse(
-        status_code=200,
-        content={"message": "Update notification received", "session_uid": session_uid, "topic_uid": topic_uid}
-    )
+    # Load the topic data
+    topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}.json")
+    
+    try:
+        with open(topic_file, "r") as f:
+            topic_data = json.load(f)
+        
+        # Check if formatted data exists
+        if "formatted" in topic_data:
+            # Forward to server.js
+            forward_success = forward_to_frontend(session_uid, topic_data["formatted"])
+            
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "message": "Update notification received and forwarded",
+                    "session_uid": session_uid,
+                    "topic_uid": topic_uid,
+                    "forwarded_to_frontend": forward_success
+                }
+            )
+        else:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "message": "Update notification received (no formatted data yet)",
+                    "session_uid": session_uid,
+                    "topic_uid": topic_uid
+                }
+            )
+    except FileNotFoundError:
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"Topic file not found: {session_uid}/{topic_uid}"}
+        )
+
+def forward_to_frontend(session_uid, formatted_data):
+    """Forward the formatted data to server.js"""
+    try:
+        response = requests.post(
+            f"{FRONTEND_URL}/update",
+            json={
+                "session_uid": session_uid,
+                "formatted": formatted_data
+            },
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            print(f"  ✓ Forwarded update to frontend: {session_uid}")
+            return True
+        else:
+            print(f"  ✗ Failed to forward to frontend: {response.status_code}")
+            return False
+    except requests.exceptions.RequestException as e:
+        print(f"  ✗ Could not connect to frontend server: {e}")
+        return False
 
 @app.get("/get-updates")
 async def get_updates():
