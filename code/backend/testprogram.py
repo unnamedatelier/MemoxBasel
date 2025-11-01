@@ -5,6 +5,7 @@ from keybert import KeyBERT
 import numpy as np
 from transformers import pipeline
 from collections import Counter
+import json
 
 inputs = [
     "Apple released a new iPhone with advanced AI features.",
@@ -66,7 +67,16 @@ def generate_output(inputs, themes, top_results=5): #top_results higher -> less 
 
     print(matches)
 
+    return matches
     #classifierindex = classifieroutput["scores"].index(max(classifieroutput["scores"]))
 
+def update_json_file(data, filename="code/backend/1.json"):
+    with open(filename) as f:
+        existing_data = json.load(f)
 
-generate_output(inputs, themes)
+    existing_data['formatted'] = data
+
+    with open(filename, "w") as f:
+        json.dump(existing_data, f)
+
+update_json_file(generate_output(inputs, themes))
