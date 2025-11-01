@@ -167,7 +167,7 @@ def run_all():
     for folder in os.listdir("code/backend/sessions_folder"):
 
         for file in os.listdir(f"code/backend/sessions_folder/{folder}"):
-            if file.endswith(".json"):
+            if file.endswith(".json") and not file.endswith("_finished.json"):
                 print(f"code/backend/sessions_folder/{folder}/{file}")
                 run(filename=f"code/backend/sessions_folder/{folder}/{file}")
 
