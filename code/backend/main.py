@@ -207,12 +207,26 @@ def run_all():
                     with open(file_path) as f:
                         data = json.load(f)
                     
-                    # Only process if checked is False or doesn't exist
-                    if data.get('checked', False):
-                        print(f"Skipping (already checked): {file_path}")
+                    # Get current inputs
+                    current_inputs = data.get('inputs', [])
+                    
+                    # Skip if no inputs at all
+                    if not current_inputs:
+                        print(f"Skipping (no inputs): {file_path}")
                         continue
                     
-                    print(f"Processing: {file_path}")
+                    # Check if already processed and inputs haven't changed
+                    if data.get('checked', False):
+                        # Check if the formatted data exists and matches current inputs count
+                        formatted = data.get('formatted', {})
+                        if formatted:
+                            # Count total items in formatted data
+                            formatted_count = sum(len(items) for items in formatted.values())
+                            if formatted_count == len(current_inputs):
+                                print(f"Skipping (already processed, no new inputs): {file_path}")
+                                continue
+                    
+                    print(f"Processing: {file_path} ({len(current_inputs)} inputs)")
                     run(filename=file_path)
                     
                 except Exception as e:
