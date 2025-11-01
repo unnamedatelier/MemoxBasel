@@ -8,6 +8,17 @@ import requests
 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],   # allow POST, OPTIONS, GET etc.
+    allow_headers=["*"],
+)
+
+
 # Frontend server URL
 FRONTEND_URL = "http://localhost:3000"
 
@@ -18,14 +29,24 @@ os.makedirs(SESSIONS_FOLDER, exist_ok=True)
 # Store updated topics queue
 updated_topics = []
 
-@app.get("/init")
-async def init(session_uid: str):
-    """Create a new session folder for the given session UID"""
+@app.post("/init")
+async def init(request: Request):
+    """
+    Create a new session folder for the given session UID.
+    Expects JSON: {"session_uid": "some_uid"}
+    """
+    data = await request.json()
+    session_uid = data.get("session_uid")
+    if not session_uid:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "session_uid is required"}
+        )
+
     session_path = os.path.join(SESSIONS_FOLDER, session_uid)
-    
-    # Create session folder
+
     os.makedirs(session_path, exist_ok=True)
-    
+
     return JSONResponse(
         status_code=200,
         content={"message": f"Session {session_uid} created successfully", "session_uid": session_uid}

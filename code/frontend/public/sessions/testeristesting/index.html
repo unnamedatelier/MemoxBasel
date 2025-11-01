@@ -4,11 +4,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>test</title>
+<title>testeristesting</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<h1>test</h1>
+<h1>testeristesting</h1>
 <div id="topics-container"></div>
 <script>
 function sendInput(topic, subtopic) {
@@ -16,25 +16,27 @@ function sendInput(topic, subtopic) {
     const input = inputField.value.trim();
     if (!input) return;
 
-    fetch('/input', {
+    fetch('http://localhost:8000/input', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            sessionId: 'test',
-            topic: topic,
-            subtopic: subtopic,
-            input: input
+            session_uid: 'testeristesting',
+            topic_name: topic,
+            text: input
         })
     })
-    .then(res => res.json())
-    .then(() => {
+    .then(res => {
+        if (!res.ok) throw new Error('Failed to send input to backend');
         inputField.value = '';
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        console.error(err);
+        alert('Failed to send input. Please try again.');
+    });
 }
 
 function updateTopics() {
-    fetch('/sessions/test/topics.json')
+    fetch('/sessions/testeristesting/topics.json')
         .then(res => res.json())
         .then(data => {
             const container = document.getElementById('topics-container');

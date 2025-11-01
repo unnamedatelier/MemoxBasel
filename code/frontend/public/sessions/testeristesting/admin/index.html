@@ -4,11 +4,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - test</title>
+<title>Admin - testeristesting</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<h1>Admin - test</h1>
+<h1>Admin - testeristesting</h1>
 <div>
 <input type="text" id="topicInput" placeholder="New Topic">
 <button onclick="createTopic()">Create Topic</button>
@@ -17,7 +17,7 @@
 
 <script>
 function updateTopics() {
-    fetch('/sessions/test/topics.json')
+    fetch('/sessions/testeristesting/topics.json')
         .then(res => res.json())
         .then(data => {
             const container = document.getElementById('topics-container');
@@ -42,6 +42,21 @@ function updateTopics() {
                         ul.appendChild(li);
                     });
                     subDiv.appendChild(ul);
+
+                    // Add input field and send button for each subtopic
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'input-container';
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `input-${topic}-${subtopic}`;
+                    input.placeholder = 'Enter your input...';
+                    const sendButton = document.createElement('button');
+                    sendButton.textContent = 'Send';
+                    sendButton.onclick = () => sendInput(topic, subtopic);
+                    inputDiv.appendChild(input);
+                    inputDiv.appendChild(sendButton);
+                    subDiv.appendChild(inputDiv);
+
                     topicDiv.appendChild(subDiv);
                 }
                 container.appendChild(topicDiv);
@@ -53,17 +68,51 @@ function updateTopics() {
 function createTopic() {
     const topicName = document.getElementById('topicInput').value;
     if (!topicName) return alert('Please enter a topic name.');
+
     fetch('/createTopic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: 'test', topicName })
+        body: JSON.stringify({ 
+            sessionId: 'testeristesting', 
+            topicName: topicName 
+        })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) throw new Error('Failed to create topic');
+        return res.json();
+    })
     .then(() => {
         document.getElementById('topicInput').value = '';
         updateTopics();
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        console.error(err);
+        alert('Failed to create topic. Please try again.');
+    });
+}
+
+function sendInput(topic, subtopic) {
+    const inputField = document.getElementById(`input-${topic}-${subtopic}`);
+    const input = inputField.value.trim();
+    if (!input) return;
+
+    fetch('http://localhost:8000/input', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            session_uid: 'testeristesting',
+            topic_name: topic,
+            text: input
+        })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Failed to send input to backend');
+        inputField.value = '';
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Failed to send input. Please try again.');
+    });
 }
 
 updateTopics();

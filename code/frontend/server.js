@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 const PORT = 3000;
+const BACKEND_URL = 'http://localhost:8000';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -17,18 +18,30 @@ if (fs.existsSync(sessionsPath)) {
 }
 fs.mkdirSync(sessionsPath, { recursive: true });
 
-app.post('/createsession', (req, res) => {
+app.post('/createsession', async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).send('No name provided.');
 
-    const dirPath = path.join(sessionsPath, name);
-    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    try {
+        const initResponse = await fetch(`${BACKEND_URL}/init`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_uid: name })
+        });
 
-    // Create empty topics file
-    const topicsFilePath = path.join(dirPath, 'topics.json');
-    fs.writeFileSync(topicsFilePath, JSON.stringify({ topics: {} }, null, 2));
 
-    const fileContent = `
+        if (!initResponse.ok) {
+            throw new Error(`Backend initialization failed: ${initResponse.statusText}`);
+        }
+
+        const dirPath = path.join(sessionsPath, name);
+        if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+
+        // Create empty topics file
+        const topicsFilePath = path.join(dirPath, 'topics.json');
+        fs.writeFileSync(topicsFilePath, JSON.stringify({ topics: {} }, null, 2));
+
+        const fileContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,21 +59,23 @@ function sendInput(topic, subtopic) {
     const input = inputField.value.trim();
     if (!input) return;
 
-    fetch('/input', {
+    fetch('${BACKEND_URL}/input', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            sessionId: '${name}',
-            topic: topic,
-            subtopic: subtopic,
-            input: input
+            session_uid: '${name}',
+            topic_name: topic,
+            text: input
         })
     })
-    .then(res => res.json())
-    .then(() => {
+    .then(res => {
+        if (!res.ok) throw new Error('Failed to send input to backend');
         inputField.value = '';
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        console.error(err);
+        alert('Failed to send input. Please try again.');
+    });
 }
 
 function updateTopics() {
@@ -117,13 +132,13 @@ setInterval(updateTopics, 5000);
 </body>
 </html>`;
 
-    fs.writeFileSync(path.join(dirPath, 'index.html'), fileContent);
+        fs.writeFileSync(path.join(dirPath, 'index.html'), fileContent);
 
-    // Admin page
-    const adminPath = path.join(dirPath, 'admin');
-    if (!fs.existsSync(adminPath)) fs.mkdirSync(adminPath, { recursive: true });
+        // Admin page
+        const adminPath = path.join(dirPath, 'admin');
+        if (!fs.existsSync(adminPath)) fs.mkdirSync(adminPath, { recursive: true });
 
-    const adminContent = `
+        const adminContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -193,17 +208,51 @@ function updateTopics() {
 function createTopic() {
     const topicName = document.getElementById('topicInput').value;
     if (!topicName) return alert('Please enter a topic name.');
+
     fetch('/createTopic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: '${name}', topicName })
+        body: JSON.stringify({ 
+            sessionId: '${name}', 
+            topicName: topicName 
+        })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) throw new Error('Failed to create topic');
+        return res.json();
+    })
     .then(() => {
         document.getElementById('topicInput').value = '';
         updateTopics();
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        console.error(err);
+        alert('Failed to create topic. Please try again.');
+    });
+}
+
+function sendInput(topic, subtopic) {
+    const inputField = document.getElementById(\`input-\${topic}-\${subtopic}\`);
+    const input = inputField.value.trim();
+    if (!input) return;
+
+    fetch('${BACKEND_URL}/input', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            session_uid: '${name}',
+            topic_name: topic,
+            text: input
+        })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Failed to send input to backend');
+        inputField.value = '';
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Failed to send input. Please try again.');
+    });
 }
 
 updateTopics();
@@ -212,71 +261,66 @@ setInterval(updateTopics, 5000);
 </body>
 </html>`;
 
-    fs.writeFileSync(path.join(adminPath, 'index.html'), adminContent);
-    res.json({ success: true });
+        fs.writeFileSync(path.join(adminPath, 'index.html'), adminContent);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).send('Error: ' + error.message);
+    }
 });
 
 app.post('/createTopic', (req, res) => {
     const { sessionId, topicName } = req.body;
-    if (!sessionId) return res.status(400).send('Session ID required.');
-
-    try {
-        // Read test.json for the data
-        const testJsonPath = path.join(__dirname, 'test.json');
-        const testData = JSON.parse(fs.readFileSync(testJsonPath, 'utf8'));
-
-        if (!testData.session_uid) {
-            return res.status(400).send('No session_uid found in test.json');
-        }
-
-        // Read current session data using session_uid from test.json
-        const topicsFilePath = path.join(sessionsPath, testData.session_uid, 'topics.json');
-        if (!fs.existsSync(topicsFilePath)) {
-            return res.status(404).send('Session not found');
-        }
-
-        let sessionData = JSON.parse(fs.readFileSync(topicsFilePath, 'utf8'));
-
-        // Add all topics from test.json
-        if (testData.formatted) {
-            for (const [topic, strings] of Object.entries(testData.formatted)) {
-                sessionData.topics[topic] = {
-                    [testData.topic_uid]: strings
-                };
-            }
-        }
-
-        fs.writeFileSync(topicsFilePath, JSON.stringify(sessionData, null, 2));
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).send('Error saving: ' + error.message);
+    if (!sessionId || !topicName) {
+        return res.status(400).json({ error: 'Session ID and topic name required.' });
     }
+
+    // Send to Python backend with the correct format
+    fetch(`${BACKEND_URL}/topic`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            session_uid: sessionId,
+            topic_uid: topicName,
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Backend returned ${response.status}`);
+        }
+        return res.json({ success: true });
+    })
+    .catch(error => {
+        console.error('Error creating topic:', error);
+        res.status(500).json({ error: 'Failed to create topic' });
+    });
 });
 
-// New endpoint to handle input submissions
-app.post('/input', (req, res) => {
-    const { sessionId, topic, subtopic, input } = req.body;
-    if (!sessionId || !topic || !subtopic || !input) {
-        return res.status(400).send('Missing required fields');
+// New endpoint to receive updates from Python server
+app.post('/update', (req, res) => {
+    const { session_uid, formatted } = req.body;
+    if (!session_uid || !formatted) {
+        return res.status(400).json({ error: 'Missing required fields' });
     }
 
     try {
-        // Read test.json to get session_uid
-        const testJsonPath = path.join(__dirname, 'test.json');
-        const testData = JSON.parse(fs.readFileSync(testJsonPath, 'utf8'));
+        const topicsFilePath = path.join(sessionsPath, session_uid, 'topics.json');
+        if (!fs.existsSync(topicsFilePath)) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
 
-        // Store the input with session and topic information
-        receivedInputs.push({
-            session_uid: testData.session_uid,
-            topic_uid: testData.topic_uid,
-            input: input,
-            timestamp: new Date().toISOString()
-        });
+        // Read current topics file
+        let sessionData = JSON.parse(fs.readFileSync(topicsFilePath, 'utf8'));
 
-        console.log('Received input:', receivedInputs[receivedInputs.length - 1]);
+        // Update topics with the new formatted data
+        sessionData.topics = formatted;
+
+        // Write updated data back to file
+        fs.writeFileSync(topicsFilePath, JSON.stringify(sessionData, null, 2));
+
         res.json({ success: true });
     } catch (error) {
-        res.status(500).send('Error processing input: ' + error.message);
+        console.error('Error processing update:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
