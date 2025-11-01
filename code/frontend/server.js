@@ -241,7 +241,7 @@ function sendInput(topic, subtopic) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             session_uid: '${name}',
-            topic_name: topic,
+            topic_uid: topic,
             text: input
         })
     })
