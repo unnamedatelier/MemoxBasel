@@ -128,9 +128,8 @@ def update_json_file(data, filename="code/backend/1.json"):
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
 
-
-if __name__ == "__main__":
-    inputs = load_inputs_from_json()
+def run(uid):
+    inputs = load_inputs_from_json(filename=f"code/backend/{uid}.json")
     
     if not inputs:
         print("No inputs found in JSON file")
@@ -144,3 +143,6 @@ if __name__ == "__main__":
                 print(f"   {text}")
         
         update_json_file(results)
+
+if __name__ == "__main__":
+    run()
