@@ -43,11 +43,10 @@ def categorize_texts(inputs, n_clusters=None):
         title = generate_title_with_gpt(cluster_texts, client)
         
         original_title, counter = title, 1 #Handle duplicate titles
-        while title in results:
-            title, counter = f"{original_title} ({counter})", counter + 1
+        while title in results: title, counter = f"{original_title} ({counter})", counter + 1
         
         results[title] = cluster_texts
-    
+
     return results
 
 def generate_title_with_gpt(texts, client): #Generate category title using GPT
@@ -85,9 +84,7 @@ Category title:"""
 def extract_fallback_title(texts): #Fallback title generation if GPT fails
     combined = " ".join(texts)
     words = combined.lower().split()
-    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'been', 'be',
-        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those',
-        'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them', 'their', 'its'}
+    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'been', 'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them', 'their', 'its'}
     
     word_freq = Counter()
     for word in words:
@@ -100,8 +97,7 @@ def extract_fallback_title(texts): #Fallback title generation if GPT fails
 
 def process_topic_file(file_path): #Process a single topic file
     try:
-        with open(file_path) as f:
-            data = json.load(f)
+        with open(file_path) as f: data = json.load(f)
         if data.get('checked', False): return False
 
         inputs = data.get('inputs', [])
@@ -117,8 +113,7 @@ def process_topic_file(file_path): #Process a single topic file
             data['checked'] = False
             print(f"  ⚠ Input count changed ({input_count} -> {current_input_count}), will reprocess")
         
-        with open(file_path, "w") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        with open(file_path, "w") as f: json.dump(data, f, indent=2, ensure_ascii=False)
         
         session_uid, topic_uid = data.get('session_uid'), data.get('topic_uid') #Notify about update
         
@@ -196,8 +191,7 @@ async def create_topic(request: Request): #Create a new topic file within a sess
     topic_file = os.path.join(session_path, f"{topic_uid}.json")
     topic_data = {"session_uid": session_uid, "topic_uid": topic_uid, "inputs": [], "checked": False}
     
-    with open(topic_file, "w") as f:
-        json.dump(topic_data, f, indent=2)
+    with open(topic_file, "w") as f: json.dump(topic_data, f, indent=2)
     
     initial_formatted = {topic_uid: {"Waiting for inputs": ["Add inputs to see categorized content."]}} #Send initial placeholder to frontend
     forward_success = forward_to_frontend(session_uid, initial_formatted)
@@ -213,14 +207,12 @@ async def add_input(request: Request): #Add input text to a topic
     topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}.json")
     if not os.path.exists(topic_file): return JSONResponse(status_code=404, content={"error": f"Topic {topic_uid} not found"})
     
-    with open(topic_file, "r") as f:
-        content = json.load(f)
+    with open(topic_file, "r") as f: content = json.load(f)
     
     content["inputs"].append(text)
     content["checked"] = False  #Mark for reprocessing
     
-    with open(topic_file, "w") as f:
-        json.dump(content, f, indent=2)
+    with open(topic_file, "w") as f: json.dump(content, f, indent=2)
     
     return JSONResponse(status_code=200, content={"message": f"Text added to topic {topic_uid}", "total_inputs": len(content["inputs"])})
 
@@ -251,15 +243,13 @@ async def get_updates(): #Get all updated topics
         topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}.json")
         
         try:
-            with open(topic_file, "r") as f:
-                topic_data = json.load(f)
+            with open(topic_file, "r") as f: topic_data = json.load(f)
             
             updates_data.append({"session_uid": session_uid, "topic_uid": topic_uid, "timestamp": update["timestamp"], "data": topic_data})
         except FileNotFoundError:
             topic_file_finished = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}_finished.json")
             try:
-                with open(topic_file_finished, "r") as f:
-                    topic_data = json.load(f)
+                with open(topic_file_finished, "r") as f: topic_data = json.load(f)
                 
                 updates_data.append({"session_uid": session_uid, "topic_uid": topic_uid, "timestamp": update["timestamp"], "data": topic_data, "finished": True})
             except FileNotFoundError: continue
@@ -277,13 +267,11 @@ async def get_topic_data(session_uid: str, topic_uid: str): #Get data for a spec
         topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}_finished.json")
         if not os.path.exists(topic_file): return JSONResponse(status_code=404, content={"error": f"Topic {topic_uid} not found"})
     
-    with open(topic_file, "r") as f:
-        topic_data = json.load(f)
+    with open(topic_file, "r") as f: topic_data = json.load(f)
     
     return JSONResponse(status_code=200, content={"session_uid": session_uid, "topic_uid": topic_uid, "data": topic_data})
 
 @app.get("/status")
-async def status(): #Get server status
-    return JSONResponse(status_code=200, content={"status": "running", "processing_active": processing_active, "check_interval": CHECK_INTERVAL, "pending_updates": len(updated_topics)})
+async def status(): return JSONResponse(status_code=200, content={"status": "running", "processing_active": processing_active, "check_interval": CHECK_INTERVAL, "pending_updates": len(updated_topics)}) #Get server status
 
 # Start mit: uvicorn combined_server:app --reload
