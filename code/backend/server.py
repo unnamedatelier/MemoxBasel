@@ -19,20 +19,16 @@ load_dotenv()
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-#Configuration
-FRONTEND_URL, SESSIONS_FOLDER, OPENAI_API_KEY, CHECK_INTERVAL = "http://localhost:3000", "sessions_folder", os.getenv("OPENAI_API_KEY"), 10 #seconds
-
+FRONTEND_URL, SESSIONS_FOLDER, OPENAI_API_KEY, CHECK_INTERVAL = "http://localhost:3000", "sessions_folder", os.getenv("OPENAI_API_KEY"), 10 #seconds | Configuration
 os.makedirs(SESSIONS_FOLDER, exist_ok=True)
 
 updated_topics, processing_active = [], True #Global state
 
 #CATEGORIZATION FUNCTIONS
-
 def categorize_texts(inputs, n_clusters=None):
     """Categorize texts using embeddings and clustering"""
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = embedder.encode(inputs)
-    
     if n_clusters is None: n_clusters = max(2, int(math.log(len(inputs))/math.log(2)))
     
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
@@ -40,7 +36,6 @@ def categorize_texts(inputs, n_clusters=None):
 
     for cluster_id in range(n_clusters):
         cluster_texts = [inputs[i] for i in range(len(inputs)) if labels[i] == cluster_id]
-        
         if not cluster_texts: continue
         
         title = generate_title_with_gpt(cluster_texts, client)
@@ -73,10 +68,7 @@ Requirements:
 Category title:"""
 
     try:
-        response = client.chat.completions.create(model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a text categorization expert. Generate concise, accurate category titles."},
-                {"role": "user", "content": prompt}])
+        response = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": "You are a text categorization expert. Generate concise, accurate category titles."}, {"role": "user", "content": prompt}])
         
         title = response.choices[0].message.content.strip().strip('"\'')
         title = ' '.join(word.capitalize() for word in title.split())
@@ -93,7 +85,6 @@ Category title:"""
 def extract_fallback_title(texts): #Fallback title generation if GPT fails
     combined = " ".join(texts)
     words = combined.lower().split()
-    
     stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
         'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'been', 'be',
         'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
@@ -110,21 +101,19 @@ def extract_fallback_title(texts): #Fallback title generation if GPT fails
     top_words = [word for word, _ in word_freq.most_common(2)]
     return ' '.join(word.capitalize() for word in top_words)
 
-def process_topic_file(file_path):
-    """Process a single topic file"""
+def process_topic_file(file_path): #Process a single topic file
     try:
         with open(file_path) as f:
             data = json.load(f)
         
         if data.get('checked', False): return False
-        
+
         inputs = data.get('inputs', [])
         if not inputs: return False
         
         print(f"\nProcessing: {file_path}")
         input_count = len(inputs)
         results = categorize_texts(inputs)
-        
         data['formatted'] = results #Update file with results
         
         current_input_count = len(data.get('inputs', [])) #Check if inputs changed during processing
@@ -141,7 +130,6 @@ def process_topic_file(file_path):
         
         if session_uid and topic_uid:
             updated_topics.append({"session_uid": session_uid, "topic_uid": topic_uid, "timestamp": datetime.now().isoformat()})
-            
             if 'formatted' in data: forward_to_frontend(session_uid, {topic_uid: data['formatted']}) #Forward to frontend
         
         return True
@@ -153,7 +141,6 @@ def process_topic_file(file_path):
 def forward_to_frontend(session_uid, formatted_data): #Forward formatted data to frontend
     try:
         response = requests.post(f"{FRONTEND_URL}/update", json={"session_uid": session_uid, "formatted": formatted_data}, timeout=5)
-        
         if response.status_code == 200:
             print(f"  ✓ Forwarded to frontend: {session_uid}")
             return True
@@ -166,7 +153,6 @@ def forward_to_frontend(session_uid, formatted_data): #Forward formatted data to
 
 async def background_processor(): #Background task to process unchecked files
     print("Background processor started")
-    
     while processing_active:
         try:
             processed, skipped = 0, 0
@@ -186,7 +172,6 @@ async def background_processor(): #Background task to process unchecked files
             if processed > 0 or skipped > 0: print(f"Summary: {processed} processed, {skipped} skipped")
             
         except Exception as e: print(f"Background processor error: {e}")
-        
         await asyncio.sleep(CHECK_INTERVAL)
 
 @app.on_event("startup")
@@ -194,12 +179,10 @@ async def startup_event(): #Start background processing on server startup
     asyncio.create_task(background_processor())
 
 #API ENDPOINTS
-
 @app.post("/init")
 async def init(request: Request): #Create a new session folder
     data = await request.json()
     session_uid = data.get("session_uid")
-    
     if not session_uid: return JSONResponse(status_code=400, content={"error": "session_uid is required"})
     
     session_path = os.path.join(SESSIONS_FOLDER, session_uid)
@@ -211,11 +194,9 @@ async def init(request: Request): #Create a new session folder
 async def create_topic(request: Request): #Create a new topic file within a session
     data = await request.json()
     session_uid, topic_uid = data.get("session_uid"), data.get("topic_uid")
-    
     if not session_uid or not topic_uid: return JSONResponse(status_code=400, content={"error": "session_uid and topic_uid required"})
     
     session_path = os.path.join(SESSIONS_FOLDER, session_uid)
-    
     if not os.path.exists(session_path): return JSONResponse(status_code=404, content={"error": f"Session {session_uid} not found"})
     
     topic_file = os.path.join(session_path, f"{topic_uid}.json")
@@ -224,23 +205,18 @@ async def create_topic(request: Request): #Create a new topic file within a sess
     with open(topic_file, "w") as f:
         json.dump(topic_data, f, indent=2)
     
-    # Send initial placeholder to frontend
-    initial_formatted = {topic_uid: {"Waiting for inputs": ["Add inputs to see categorized content."]}}
+    initial_formatted = {topic_uid: {"Waiting for inputs": ["Add inputs to see categorized content."]}} #Send initial placeholder to frontend
     forward_success = forward_to_frontend(session_uid, initial_formatted)
     
-    return JSONResponse(
-        status_code=200,
-        content={"message": f"Topic {topic_uid} created", "session_uid": session_uid, "topic_uid": topic_uid, "forwarded_to_frontend": forward_success})
+    return JSONResponse(status_code=200, content={"message": f"Topic {topic_uid} created", "session_uid": session_uid, "topic_uid": topic_uid, "forwarded_to_frontend": forward_success})
 
 @app.post("/input")
 async def add_input(request: Request): #Add input text to a topic
     data = await request.json()
     session_uid, topic_uid, text = data.get("session_uid"), data.get("topic_uid"), data.get("text")
-    
     if not session_uid or not topic_uid or not text: return JSONResponse(status_code=400, content={"error": "session_uid, topic_uid and text required"})
     
     topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}.json")
-    
     if not os.path.exists(topic_file): return JSONResponse(status_code=404, content={"error": f"Topic {topic_uid} not found"})
     
     with open(topic_file, "r") as f:
@@ -258,24 +234,19 @@ async def add_input(request: Request): #Add input text to a topic
 async def end_topic(request: Request): #Mark a topic as finished
     data = await request.json()
     session_uid, topic_uid = data.get("session_uid"), data.get("topic_uid")
-    
     if not session_uid or not topic_uid: return JSONResponse(status_code=400, content={"error": "session_uid and topic_uid required"})
     
     topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}.json")
-    
     if not os.path.exists(topic_file): return JSONResponse(status_code=404, content={"error": f"Topic {topic_uid} not found"})
     
     new_topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}_finished.json")
-    
     if os.path.exists(new_topic_file): return JSONResponse(status_code=409, content={"error": f"Topic {topic_uid} already finished"})
     
     os.rename(topic_file, new_topic_file)
-    
     return JSONResponse(status_code=200, content={"message": f"Topic {topic_uid} marked as finished", "session_uid": session_uid, "topic_uid": topic_uid})
 
 @app.get("/get-updates")
-async def get_updates():
-    """Get all updated topics"""
+async def get_updates(): #Get all updated topics
     global updated_topics
     
     if not updated_topics: return JSONResponse(status_code=200, content={"updates": [], "count": 0})
@@ -300,7 +271,7 @@ async def get_updates():
             except FileNotFoundError: continue
     
     updated_topics = []
-    
+
     return JSONResponse(status_code=200, content={"updates": updates_data, "count": len(updates_data)})
 
 @app.get("/get-topic-data")
@@ -308,7 +279,6 @@ async def get_topic_data(session_uid: str, topic_uid: str): #Get data for a spec
     if not session_uid or not topic_uid: return JSONResponse(status_code=400, content={"error": "session_uid and topic_uid required"})
     
     topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}.json")
-    
     if not os.path.exists(topic_file):
         topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}_finished.json")
         if not os.path.exists(topic_file): return JSONResponse(status_code=404, content={"error": f"Topic {topic_uid} not found"})
