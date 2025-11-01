@@ -1,41 +1,63 @@
-async function joinSession() {
-    const sessionName = document.getElementById('joinInput').value
-        .trim()
-        .replace(/\s+/g, '-'); // Ersetze Leerzeichen durch Bindestriche
-    
+function joinSession() {
+    const sessionName = document.getElementById('joinInput').value.trim().replace(/\s+/g, '-');
     if (!sessionName) {
-        alert('Please enter a session name');
+        alert('Bitte geben Sie einen Konferenznamen ein.');
         return;
     }
-    window.location.href = `/sessions/${conferenceName}`;
+    window.location.href = `/sessions/${sessionName}`;
 }
 
-async function createSession() {
-    const sessionName = document.getElementById('createInput').value
-        .trim()
-        .replace(/\s+/g, '-'); // Ersetze Leerzeichen durch Bindestriche
-    
+function createSession() {
+    const sessionName = document.getElementById('createInput').value.trim().replace(/\s+/g, '-');
     if (!sessionName) {
-        alert('Please enter a session name');
+        alert('Bitte geben Sie einen Konferenznamen ein.');
         return;
     }
 
-    try {
-        const response = await fetch('/createsession', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name: sessionName })
+    fetch('/createsession', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: sessionName }),
+    })
+        .then((response) => response.text())
+        .then((result) => {
+            alert(result);
+            window.location.href = `/sessions/${sessionName}/admin`;
+        })
+        .catch((error) => {
+            alert('Fehler beim Erstellen der Konferenz: ' + error);
         });
+}
 
-        if (!response.ok) {
-            throw new Error('Error creating session');
-        }
-
-        // Nach erfolgreicher Erstellung zur Admin-Seite weiterleiten
-        window.location.href = `sessions/${sessionName}/admin/`;
-    } catch (error) {
-        alert('Fehler: ' + error.message);
+function createTopic(sessionId) {
+    const topicName = document.getElementById('topicInput').value.trim();
+    if (!topicName) {
+        alert('Bitte geben Sie einen Topic-Namen ein.');
+        return;
     }
+
+    fetch('/createTopic', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            sessionId,
+            topicName
+        }),
+    })
+        .then((response) => response.json())
+        .then((result) => {
+            if (result.success) {
+                alert(result.message);
+                document.getElementById('topicInput').value = '';
+            } else {
+                alert('Fehler: ' + result.message);
+            }
+        })
+        .catch((error) => {
+            alert('Fehler beim Erstellen des Topics: ' + error);
+        });
 }
