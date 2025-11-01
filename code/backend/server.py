@@ -22,6 +22,11 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, 
 #Configuration
 FRONTEND_URL, SESSIONS_FOLDER, OPENAI_API_KEY, CHECK_INTERVAL = "http://localhost:3000", "sessions_folder", os.getenv("OPENAI_API_KEY"), 10 #seconds
 
+# Clean sessions folder on startup
+if os.path.exists(SESSIONS_FOLDER):
+    import shutil
+    shutil.rmtree(SESSIONS_FOLDER)
+
 os.makedirs(SESSIONS_FOLDER, exist_ok=True)
 
 updated_topics, processing_active = [], True #Global state
