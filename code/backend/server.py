@@ -31,7 +31,7 @@ def categorize_texts(inputs, n_clusters=None):
     """Categorize texts using embeddings and clustering"""
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = embedder.encode(inputs)
-    if n_clusters is None: n_clusters = max(2, int(math.log(len(inputs))/math.log(2)))
+    if n_clusters is None: n_clusters = int(1.5 * math.log(len(inputs)+1) / math.log(3) + 1.6)
     
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     labels, client, results = kmeans.fit_predict(embeddings), OpenAI(api_key=OPENAI_API_KEY), {}
@@ -44,8 +44,7 @@ def categorize_texts(inputs, n_clusters=None):
         
         original_title, counter = title, 1 #Handle duplicate titles
         while title in results:
-            title = f"{original_title} ({counter})"
-            counter += 1
+            title, counter = f"{original_title} ({counter})", counter + 1
         
         results[title] = cluster_texts
     
@@ -75,8 +74,7 @@ Category title:"""
         title = response.choices[0].message.content.strip().strip('"\'')
         title = ' '.join(word.capitalize() for word in title.split())
         
-        if len(title.split()) > 4 or not title:
-            return extract_fallback_title(texts)
+        if len(title.split()) > 4 or not title: return extract_fallback_title(texts)
         
         return title
         
@@ -87,17 +85,14 @@ Category title:"""
 def extract_fallback_title(texts): #Fallback title generation if GPT fails
     combined = " ".join(texts)
     words = combined.lower().split()
-    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-        'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'been', 'be',
-        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-        'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those',
+    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'been', 'be',
+        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those',
         'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them', 'their', 'its'}
     
     word_freq = Counter()
     for word in words:
         clean = re.sub(r'[^\w]', '', word)
         if clean not in stop_words and len(clean) > 3 and not clean.isdigit(): word_freq[clean] += 1
-    
     if not word_freq: return "General Topics"
     
     top_words = [word for word, _ in word_freq.most_common(2)]
@@ -107,16 +102,13 @@ def process_topic_file(file_path): #Process a single topic file
     try:
         with open(file_path) as f:
             data = json.load(f)
-        
         if data.get('checked', False): return False
 
         inputs = data.get('inputs', [])
         if not inputs: return False
         
         print(f"\nProcessing: {file_path}")
-        input_count = len(inputs)
-        results = categorize_texts(inputs)
-        data['formatted'] = results #Update file with results
+        input_count, data['formatted'] = len(inputs), categorize_texts(inputs) #Update file with results
         
         current_input_count = len(data.get('inputs', [])) #Check if inputs changed during processing
         if current_input_count == input_count:
