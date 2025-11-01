@@ -1,0 +1,9 @@
+{
+  "session_uid": "test-session-456",
+  "topic_uid": "science-notes",
+  "inputs": [
+    "Newton's First Law: An object at rest stays at rest",
+    "E = mc\u00b2"
+  ],
+  "checked": false
+}
