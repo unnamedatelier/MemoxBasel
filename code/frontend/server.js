@@ -727,7 +727,7 @@ updateTopics();
 
 <!-- QR Code Modal -->
 <div class="modal-overlay" id="qr-code-modal" onclick="closeQRCodeModal(event)">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
+    <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-header">
             <h2>📱 Session QR Code</h2>
             <button class="modal-close" onclick="closeQRCodeModal()">✕</button>

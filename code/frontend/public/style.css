@@ -374,6 +374,11 @@ body {
     transform: scale(1) translateY(0);
 }
 
+#qr-code-modal .modal {
+    max-width: 500px;
+    width: 90%;
+}
+
 .modal-header {
     padding: 32px 40px 24px;
     border-bottom: 1px solid var(--border);
