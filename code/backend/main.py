@@ -4,13 +4,9 @@ import json
 import os
 import requests
 from openai import OpenAI
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Get OpenAI API key from environment variable
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# Add your OpenAI API key here
+OPENAI_API_KEY = "apikey"
 
 def categorize_texts(inputs, n_clusters=None):
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
@@ -46,7 +42,6 @@ def categorize_texts(inputs, n_clusters=None):
 
 
 def generate_title_with_gpt(texts, client):
-
     # Prepare the text sample (limit to avoid token overflow)
     sample_texts = texts[:5] if len(texts) > 5 else texts
     combined_text = "\n".join(f"- {text[:200]}" for text in sample_texts)
@@ -67,7 +62,7 @@ Category title:"""
 
     try:
         response = client.chat.completions.create(
-            model="gpt-5-nano",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a text categorization expert. Generate concise, accurate category titles."},
                 {"role": "user", "content": prompt}
@@ -122,27 +117,11 @@ def extract_fallback_title(texts):
     top_words = [word for word, _ in word_freq.most_common(2)]
     return ' '.join(word.capitalize() for word in top_words)
 
-
 def load_inputs_from_json(filename):
     """Load inputs from JSON file"""
     with open(filename) as f:
         data = json.load(f)
     return data.get('inputs', [])
-
-def mark_as_processing(filename):
-    """Mark file as being processed immediately to prevent duplicate processing"""
-    try:
-        with open(filename) as f:
-            existing_data = json.load(f)
-    except FileNotFoundError:
-        existing_data = {}
-    
-    existing_data['checked'] = True  # Mark IMMEDIATELY when processing starts
-    
-    with open(filename, "w") as f:
-        json.dump(existing_data, f, indent=2, ensure_ascii=False)
-    
-    return existing_data
 
 def update_json_file(filename, data):
     """Update JSON file with categorization results"""
@@ -153,6 +132,7 @@ def update_json_file(filename, data):
         existing_data = {}
     
     existing_data['formatted'] = data
+    existing_data['checked'] = True  # Mark as checked AFTER successful processing
     
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
@@ -226,14 +206,12 @@ def run_all():
                     with open(file_path) as f:
                         data = json.load(f)
                     
-                    if data.get('checked', True):
+                    # Only process if checked is False or missing (new files default to False = unchecked)
+                    if data.get('checked', False) == True:
                         skipped_count += 1
                         continue
                     
                     print(f"\nProcessing: {file_path}")
-
-                    mark_as_processing(file_path)
-
                     run(filename=file_path)
                     processed_count += 1
                     
@@ -245,10 +223,8 @@ def run_all():
 
 if __name__ == "__main__":
     import time
-
     
     print("Starting GPT-based categorization system")
-    print("Model: GPT-4o-mini")
     print("Check interval: 10 seconds")
     print("Press Ctrl+C to stop\n")
     
