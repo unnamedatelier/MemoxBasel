@@ -4,6 +4,8 @@ from transformers import pipeline
 import json
 import re
 from collections import Counter
+import os
+
 
 def categorize_texts(inputs, n_clusters=None):
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
@@ -37,7 +39,8 @@ def categorize_texts(inputs, n_clusters=None):
 
 
 def generate_title_from_cluster(texts, classifier):
-    candidate_topics = [
+    candidate_topics = [ #just minor examples
+        "technology and innovation",
         "artificial intelligence and machine learning",
         "climate change and environment",
         "healthcare and medical research",
@@ -57,7 +60,22 @@ def generate_title_from_cluster(texts, classifier):
         "real estate and housing",
         "cybersecurity and privacy",
         "telecommunications and networks",
-        "manufacturing and industry"
+        "manufacturing and industry",
+        "agriculture and farming",
+        "fashion and lifestyle",
+        "history and culture",
+        "law and legal issues",
+        "philosophy and ethics",
+        "psychology and human behavior",
+        "virtual reality and augmented reality",
+        "blockchain and cryptocurrencies",
+        "robotics and automation",
+        "quantum computing and physics",
+        "nanotechnology and materials science",
+        "oceanography and marine biology",
+        "wildlife and conservation",
+        "urban development and smart cities",
+        "mental health and well-being"
     ]
     
     combined = " ".join(texts)
@@ -110,13 +128,13 @@ def extract_key_nouns(text):
     return top_word.capitalize()
 
 
-def load_inputs_from_json(filename="code/backend/1.json"):
+def load_inputs_from_json(filename):
     with open(filename) as f:
         data = json.load(f)
     return data.get('inputs', [])
 
 
-def update_json_file(data, filename="code/backend/1.json"):
+def update_json_file(filename, data):
     try:
         with open(filename) as f:
             existing_data = json.load(f)
@@ -128,8 +146,8 @@ def update_json_file(data, filename="code/backend/1.json"):
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
 
-def run(uid=1):
-    inputs = load_inputs_from_json(filename=f"code/backend/{uid}.json")
+def run(filename):
+    inputs = load_inputs_from_json(filename)
     
     if not inputs:
         print("No inputs found in JSON file")
@@ -142,7 +160,17 @@ def run(uid=1):
             for text in texts:
                 print(f"   {text}")
         
-        update_json_file(results)
+        update_json_file(filename, results)
+
+def run_all():
+
+    for folder in os.listdir("code/backend/sessions_folder"):
+
+        for file in os.listdir(f"code/backend/sessions_folder/{folder}"):
+            if file.endswith(".json") and not file.endswith("_finished.json"):
+                print(f"code/backend/sessions_folder/{folder}/{file}")
+                run(filename=f"code/backend/sessions_folder/{folder}/{file}")
+
 
 if __name__ == "__main__":
-    run()
+    run_all()
