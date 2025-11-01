@@ -114,6 +114,12 @@ def extract_key_nouns(text):
     return top_word.capitalize()
 
 
+def load_inputs_from_json(filename="code/backend/1.json"):
+    with open(filename) as f:
+        data = json.load(f)
+    return data.get('inputs', [])
+
+
 def update_json_file(data, filename="code/backend/1.json"):
     try:
         with open(filename) as f:
@@ -128,21 +134,17 @@ def update_json_file(data, filename="code/backend/1.json"):
 
 
 if __name__ == "__main__":
-    inputs = [
-        "Marketing strategies for social media platforms have evolved significantly over the past decade.",
-        "Seller financing options are becoming more popular in real estate transactions.",
-        "Stock market volatility can impact investment strategies and portfolio management.",
-        "Shareholder activism is influencing corporate governance practices worldwide.",
-        "Debt consolidation services help individuals manage multiple debts more effectively.",
-        "Digital marketing trends are shaping the way businesses reach their target audiences.",
-    ]
+    inputs = load_inputs_from_json()
     
-    results = categorize_texts(inputs)
-    
-    print("\nResults")
-    for category, texts in results.items():
-        print(f"\n{category}")
-        for text in texts:
-            print(f"   {text}")
-    
-    update_json_file(results)
+    if not inputs:
+        print("No inputs found in JSON file")
+    else:
+        results = categorize_texts(inputs)
+        
+        print("\nResults")
+        for category, texts in results.items():
+            print(f"\n{category}")
+            for text in texts:
+                print(f"   {text}")
+        
+        update_json_file(results)
