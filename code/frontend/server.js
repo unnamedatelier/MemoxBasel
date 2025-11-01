@@ -187,7 +187,7 @@ app.post('/createsession', async (req, res) => {
                     <button onclick="sendInput()">Send</button>
                 </div>
             </div>
-            <div style="width: 500px; min-width: 500px; display: flex; flex-direction: column; padding: 30px; background: var(--card-background); border-radius: 12px; overflow-y: auto;">
+            <div style="width: 650px; min-width: 650px; display: flex; flex-direction: column; padding: 30px; background: var(--card-background); border-radius: 12px; overflow-y: auto;">
                 <h3 style="margin: 0 0 30px 0; color: var(--text-primary); font-size: 20px; font-weight: 600; text-align: center;">Topic Overview</h3>
                 <div style="width: 100%; aspect-ratio: 1;">
                     <canvas id="topic-radar-chart"></canvas>
@@ -605,7 +605,8 @@ function updateRadarChart(subtopics) {
     
     // Build labels and data - use actual counts
     Object.entries(subtopics).forEach(([subtopic, inputs]) => {
-        labels.push(subtopic);
+        // Replace spaces with newlines for better spacing
+        labels.push(subtopic.split(' '));
         dataValues.push(inputs.length);
     });
     
@@ -665,7 +666,8 @@ function updateRadarChart(subtopics) {
                         font: {
                             size: 16,
                             weight: '500'
-                        }
+                        },
+                        padding: 20
                     }
                 }
             },
@@ -872,7 +874,7 @@ updateTopics();
                     <button onclick="sendInput()">Send</button>
                 </div>
             </div>
-            <div style="width: 500px; min-width: 500px; display: flex; flex-direction: column; padding: 30px; background: var(--card-background); border-radius: 12px; overflow-y: auto;">
+            <div style="width: 650px; min-width: 650px; display: flex; flex-direction: column; padding: 30px; background: var(--card-background); border-radius: 12px; overflow-y: auto;">
                 <h3 style="margin: 0 0 30px 0; color: var(--text-primary); font-size: 20px; font-weight: 600; text-align: center;">Topic Overview</h3>
                 <div style="width: 100%; aspect-ratio: 1;">
                     <canvas id="topic-radar-chart"></canvas>
@@ -1311,7 +1313,8 @@ function updateRadarChart(subtopics) {
     
     // Build labels and data - use actual counts
     Object.entries(subtopics).forEach(([subtopic, inputs]) => {
-        labels.push(subtopic);
+        // Replace spaces with newlines for better spacing
+        labels.push(subtopic.split(' '));
         dataValues.push(inputs.length);
     });
     
@@ -1371,7 +1374,8 @@ function updateRadarChart(subtopics) {
                         font: {
                             size: 16,
                             weight: '500'
-                        }
+                        },
+                        padding: 20
                     }
                 }
             },
