@@ -1,0 +1,75 @@
+{
+  "session_uid": "test",
+  "topic_uid": "culture",
+  "inputs": [
+    "goethe",
+    "schiller",
+    "eta hoffman",
+    "mozart",
+    "bach",
+    "chopin",
+    "aydan leuck",
+    "hayden",
+    "erdogan",
+    "donald trump",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "alexander the great",
+    "minors"
+  ],
+  "checked": true,
+  "formatted": {
+    "Turkish Political Landscape": [
+      "erdogan"
+    ],
+    "Alexander The Great": [
+      "alexander the great",
+      "alexander the great",
+      "alexander the great",
+      "alexander the great",
+      "alexander the great",
+      "alexander the great",
+      "alexander the great",
+      "alexander the great",
+      "alexander the great",
+      "alexander the great",
+      "alexander the great"
+    ],
+    "Goethe Literature Analysis": [
+      "goethe"
+    ],
+    "Youth Welfare Issues": [
+      "minors"
+    ],
+    "Classical Music Composers": [
+      "mozart",
+      "bach"
+    ],
+    "E.t.a. Hoffman Literature": [
+      "eta hoffman"
+    ],
+    "German Literature Analysis": [
+      "schiller"
+    ],
+    "Hayden Context": [
+      "hayden"
+    ],
+    "Aydan Leuck Profile": [
+      "aydan leuck"
+    ],
+    "Donald Trump Politics": [
+      "donald trump"
+    ],
+    "Chopin Piano Compositions": [
+      "chopin"
+    ]
+  }
+}
