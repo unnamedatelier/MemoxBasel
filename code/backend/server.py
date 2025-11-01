@@ -31,7 +31,7 @@ def categorize_texts(inputs, n_clusters=None):
     """Categorize texts using embeddings and clustering"""
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = embedder.encode(inputs)
-    if n_clusters is None: n_clusters = int(1.5 * math.log(len(inputs)+1) / math.log(3) + 1.6)
+    if n_clusters is None: n_clusters = int(1.5 * math.log(len(inputs)+1) / math.log(3) + 2.1) # +1.6 +0.5 because of int
     
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     labels, client, results = kmeans.fit_predict(embeddings), OpenAI(api_key=OPENAI_API_KEY), {}

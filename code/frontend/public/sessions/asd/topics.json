@@ -1,0 +1,30 @@
+{
+  "topics": {
+    "hello": {
+      "Confectionery Varieties": [
+        "nougat",
+        "nugget"
+      ],
+      "Metals And Materials": [
+        "gold",
+        "steel",
+        "iron",
+        "skibidi"
+      ],
+      "Construction Materials": [
+        "how are you",
+        "brick",
+        "mortar",
+        "cement"
+      ],
+      "German Literature Analysis": [
+        "schiller"
+      ]
+    },
+    "whats up": {
+      "Waiting for inputs": [
+        "Add inputs to see categorized content."
+      ]
+    }
+  }
+}

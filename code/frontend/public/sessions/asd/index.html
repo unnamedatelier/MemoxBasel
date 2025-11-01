@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - hello</title>
+<title>asd - Session</title>
 <link rel="stylesheet" href="/style.css">
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
 </head>
@@ -31,25 +31,9 @@
     </svg>
 </button>
 
-<!-- QR Code Button (Admin only) -->
-<button class="qr-code-button" onclick="showQRCode()" title="Show QR Code">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
-        <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
-        <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
-        <rect x="5" y="5" width="3" height="3" fill="currentColor"/>
-        <rect x="16" y="5" width="3" height="3" fill="currentColor"/>
-        <rect x="5" y="16" width="3" height="3" fill="currentColor"/>
-        <rect x="14" y="14" width="2" height="2" fill="currentColor"/>
-        <rect x="18" y="14" width="2" height="2" fill="currentColor"/>
-        <rect x="14" y="18" width="2" height="2" fill="currentColor"/>
-        <rect x="18" y="18" width="2" height="2" fill="currentColor"/>
-    </svg>
-</button>
-
 <!-- AI Summary Button -->
 <button class="ai-summary-button" onclick="generateAISummary()" title="Generate AI Summary">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/>
         <path d="M19 4L19.5 6.5L22 7L19.5 7.5L19 10L18.5 7.5L16 7L18.5 6.5L19 4Z" fill="currentColor"/>
         <path d="M19 14L19.5 16.5L22 17L19.5 17.5L19 20L18.5 17.5L16 17L18.5 16.5L19 14Z" fill="currentColor"/>
@@ -57,22 +41,19 @@
 </button>
 
 <div class="topics-page">
-    <div class="admin-header">
-        <div class="admin-header-top">
-            <h1>Admin - hello</h1>
-            <div class="user-counter" id="user-counter">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span id="user-count">0</span>
-            </div>
+    <div class="page-header">
+        <div class="header-content">
+            <h1>asd</h1>
+            <p class="subtitle">View and contribute to topics</p>
         </div>
-        <div class="admin-form">
-            <input type="text" id="topicInput" placeholder="Enter new topic name" autocomplete="off">
-            <button onclick="createTopic()">Create Topic</button>
+        <div class="user-counter" id="user-counter">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="user-count">0</span>
         </div>
     </div>
     
@@ -81,7 +62,7 @@
     <div class="empty-state" id="empty-state" style="display: none;">
         <div class="empty-state-icon">📝</div>
         <p>No topics yet</p>
-        <p style="font-size: 14px; margin-top: 8px;">Create your first topic above</p>
+        <p style="font-size: 14px; margin-top: 8px;">Topics will appear here once they are created</p>
     </div>
 </div>
 
@@ -128,16 +109,14 @@
 
 <!-- QR Code Modal -->
 <div class="modal-overlay" id="qr-code-modal" onclick="closeQRCodeModal(event)">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
+    <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h2>📱 Session QR Code</h2>
+            <h2>📱 QR Code</h2>
             <button class="modal-close" onclick="closeQRCodeModal()">✕</button>
         </div>
-        <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; padding: 32px;">
-            <div id="qr-code-container" style="background: white; padding: 16px; border-radius: 12px; margin-bottom: 16px;"></div>
-            <p style="text-align: center; color: var(--text-secondary); font-size: 14px; margin: 0;">
-                Scan to access this session
-            </p>
+        <div class="modal-body">
+            <div id="qr-code-container" style="display: flex; justify-content: center; align-items: center; padding: 20px;"></div>
+            <p style="text-align: center; margin-top: 20px; color: var(--text-secondary);">Scan to open the session</p>
         </div>
     </div>
 </div>
@@ -163,10 +142,21 @@ function updateThemeIcon(theme) {
     const text = document.getElementById('themeText');
     if (icon && text) {
         if (theme === 'dark') {
-            icon.textContent = '☀️';
+            // Sun icon for light mode
+            icon.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="4" fill="currentColor"/>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            `;
             text.textContent = 'Light';
         } else {
-            icon.textContent = '🌙';
+            // Moon icon for dark mode
+            icon.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
+                </svg>
+            `;
             text.textContent = 'Dark';
         }
     }
@@ -186,7 +176,7 @@ function sendHeartbeat() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            sessionName: 'hello',
+            sessionName: 'asd',
             userId: userId
         })
     })
@@ -222,36 +212,6 @@ function showMessage(text, type) {
     }, 3000);
 }
 
-function createTopic() {
-    const topicName = document.getElementById('topicInput').value.trim();
-    if (!topicName) {
-        showMessage('Please enter a topic name', 'error');
-        return;
-    }
-
-    fetch('/createTopic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            sessionId: 'hello', 
-            topicName: topicName 
-        })
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('Failed to create topic');
-        return res.json();
-    })
-    .then(() => {
-        document.getElementById('topicInput').value = '';
-        showMessage('Topic created successfully!', 'success');
-        setTimeout(() => updateTopics(), 500);
-    })
-    .catch(err => {
-        console.error(err);
-        showMessage('Failed to create topic', 'error');
-    });
-}
-
 function sendInput() {
     if (!currentTopic) return;
     const inputField = document.getElementById('modal-input');
@@ -265,7 +225,7 @@ function sendInput() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            session_uid: 'hello',
+            session_uid: 'asd',
             topic_uid: currentTopic,
             text: input
         })
@@ -282,7 +242,7 @@ function sendInput() {
 }
 
 function updateTopics() {
-    fetch('/sessions/hello/topics.json')
+    fetch('/sessions/asd/topics.json')
         .then(res => res.json())
         .then(data => {
             topicsData = data.topics || {};
@@ -432,7 +392,7 @@ document.addEventListener('keydown', (e) => {
 // Refresh Modal Function
 function refreshModal() {
     if (currentTopic) {
-        fetch('/getTopics/hello')
+        fetch('/getTopics/asd')
             .then(res => res.json())
             .then(data => {
                 topicsData = data;
@@ -492,7 +452,7 @@ async function generateAISummary() {
 
 // Refresh Modal Content Function - reloads topics and reopens modal
 function refreshModalContent() {
-    fetch('/sessions/hello/topics.json')
+    fetch('/sessions/asd/topics.json')
         .then(res => res.json())
         .then(data => {
             topicsData = data.topics || {};
@@ -515,20 +475,16 @@ function showQRCode() {
     const container = document.getElementById('qr-code-container');
     container.innerHTML = ''; // Clear previous QR code
     
-    // Create a canvas element
-    const canvas = document.createElement('canvas');
-    container.appendChild(canvas);
-    
     // Get the current URL without /admin
     const currentUrl = window.location.href.replace('/admin', '');
     
     // Generate QR code
-    QRCode.toCanvas(canvas, currentUrl, {
+    QRCode.toCanvas(container, currentUrl, {
         width: 256,
         margin: 2,
         color: {
-            dark: '#000000',
-            light: '#FFFFFF'
+            dark: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
+            light: getComputedStyle(document.documentElement).getPropertyValue('--background').trim()
         }
     }, function (error) {
         if (error) {
@@ -547,7 +503,7 @@ function closeQRCodeModal(event) {
     document.body.style.overflow = '';
 }
 
-// Add keyboard support for AI Summary and QR Code modals
+// Add keyboard support for modals
 document.addEventListener('keydown', (e) => {
     const aiModal = document.getElementById('ai-summary-modal');
     const qrModal = document.getElementById('qr-code-modal');

@@ -1,0 +1,39 @@
+{
+  "session_uid": "asd",
+  "topic_uid": "hello",
+  "inputs": [
+    "how are you",
+    "brick",
+    "mortar",
+    "nougat",
+    "nugget",
+    "gold",
+    "steel",
+    "iron",
+    "cement",
+    "skibidi",
+    "schiller"
+  ],
+  "checked": true,
+  "formatted": {
+    "Confectionery Varieties": [
+      "nougat",
+      "nugget"
+    ],
+    "Metals And Materials": [
+      "gold",
+      "steel",
+      "iron",
+      "skibidi"
+    ],
+    "Construction Materials": [
+      "how are you",
+      "brick",
+      "mortar",
+      "cement"
+    ],
+    "German Literature Analysis": [
+      "schiller"
+    ]
+  }
+}
