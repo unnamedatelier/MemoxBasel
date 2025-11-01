@@ -5,7 +5,7 @@ const fs = require('fs');
 const { OpenAI } = require('openai');
 const app = express();
 const PORT = 3000;
-const BACKEND_URL = 'http://localhost:8000';
+const BACKEND_URL = 'https://sessions-9ee7.onrender.com';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 

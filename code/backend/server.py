@@ -20,7 +20,7 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 #Configuration
-FRONTEND_URL, SESSIONS_FOLDER, OPENAI_API_KEY, CHECK_INTERVAL = "http://localhost:3000", "sessions_folder", os.getenv("OPENAI_API_KEY"), 10 #seconds
+FRONTEND_URL, SESSIONS_FOLDER, OPENAI_API_KEY, CHECK_INTERVAL = "https://sessions-frontend.onrender.com", "sessions_folder", os.getenv("OPENAI_API_KEY"), 10 #seconds
 
 os.makedirs(SESSIONS_FOLDER, exist_ok=True)
 
