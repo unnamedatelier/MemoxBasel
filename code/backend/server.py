@@ -19,21 +19,17 @@ load_dotenv()
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-#Configuration
-FRONTEND_URL, SESSIONS_FOLDER, OPENAI_API_KEY, CHECK_INTERVAL = "http://localhost:3000", "sessions_folder", os.getenv("OPENAI_API_KEY"), 10 #seconds
+FRONTEND_URL, SESSIONS_FOLDER, OPENAI_API_KEY, CHECK_INTERVAL = "http://localhost:3000", "sessions_folder", os.getenv("OPENAI_API_KEY"), 10 #seconds | Configuration
 
-# Clean sessions folder on startup
-if os.path.exists(SESSIONS_FOLDER):
+if os.path.exists(SESSIONS_FOLDER): #Clean sessions folder on startup
     import shutil
     shutil.rmtree(SESSIONS_FOLDER)
 
 os.makedirs(SESSIONS_FOLDER, exist_ok=True)
-
 updated_topics, processing_active = [], True #Global state
 
 #CATEGORIZATION FUNCTIONS
-def categorize_texts(inputs, n_clusters=None):
-    """Categorize texts using embeddings and clustering"""
+def categorize_texts(inputs, n_clusters=None): #Categorize texts using embeddings and clustering
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = embedder.encode(inputs)
     if n_clusters is None: n_clusters = int(1.5 * math.log(len(inputs)+1) / math.log(3) + 2.1) # +1.6 +0.5 because of int
@@ -125,7 +121,6 @@ def process_topic_file(file_path): #Process a single topic file
         if session_uid and topic_uid:
             updated_topics.append({"session_uid": session_uid, "topic_uid": topic_uid, "timestamp": datetime.now().isoformat()})
             if 'formatted' in data: forward_to_frontend(session_uid, {topic_uid: data['formatted']}) #Forward to frontend
-        
         return True
         
     except Exception as e:
@@ -150,16 +145,13 @@ async def background_processor(): #Background task to process unchecked files
     while processing_active:
         try:
             processed, skipped = 0, 0
-            
             for folder in os.listdir(SESSIONS_FOLDER):
                 folder_path = os.path.join(SESSIONS_FOLDER, folder)
-                
                 if not os.path.isdir(folder_path): continue
                 
                 for file in os.listdir(folder_path):
                     if file.endswith(".json") and not file.endswith("_finished.json"): 
                         file_path = os.path.join(folder_path, file)
-                        
                         if process_topic_file(file_path): processed += 1
                         else: skipped += 1
             
@@ -169,8 +161,7 @@ async def background_processor(): #Background task to process unchecked files
         await asyncio.sleep(CHECK_INTERVAL)
 
 @app.on_event("startup")
-async def startup_event(): #Start background processing on server startup
-    asyncio.create_task(background_processor())
+async def startup_event(): asyncio.create_task(background_processor()) #Start background processing on server startup
 
 #API ENDPOINTS
 @app.post("/init")
@@ -193,9 +184,7 @@ async def create_topic(request: Request): #Create a new topic file within a sess
     session_path = os.path.join(SESSIONS_FOLDER, session_uid)
     if not os.path.exists(session_path): return JSONResponse(status_code=404, content={"error": f"Session {session_uid} not found"})
     
-    topic_file = os.path.join(session_path, f"{topic_uid}.json")
-    topic_data = {"session_uid": session_uid, "topic_uid": topic_uid, "inputs": [], "checked": False}
-    
+    topic_file, topic_data = os.path.join(session_path, f"{topic_uid}.json"), {"session_uid": session_uid, "topic_uid": topic_uid, "inputs": [], "checked": False}
     with open(topic_file, "w") as f: json.dump(topic_data, f, indent=2)
     
     initial_formatted = {topic_uid: {"Waiting for inputs": ["Add inputs to see categorized content."]}} #Send initial placeholder to frontend
@@ -213,12 +202,10 @@ async def add_input(request: Request): #Add input text to a topic
     if not os.path.exists(topic_file): return JSONResponse(status_code=404, content={"error": f"Topic {topic_uid} not found"})
     
     with open(topic_file, "r") as f: content = json.load(f)
-    
     content["inputs"].append(text)
     content["checked"] = False  #Mark for reprocessing
     
     with open(topic_file, "w") as f: json.dump(content, f, indent=2)
-    
     return JSONResponse(status_code=200, content={"message": f"Text added to topic {topic_uid}", "total_inputs": len(content["inputs"])})
 
 @app.post("/end-topic")
@@ -239,7 +226,6 @@ async def end_topic(request: Request): #Mark a topic as finished
 @app.get("/get-updates")
 async def get_updates(): #Get all updated topics
     global updated_topics
-    
     if not updated_topics: return JSONResponse(status_code=200, content={"updates": [], "count": 0})
     
     updates_data = []
@@ -249,18 +235,15 @@ async def get_updates(): #Get all updated topics
         
         try:
             with open(topic_file, "r") as f: topic_data = json.load(f)
-            
             updates_data.append({"session_uid": session_uid, "topic_uid": topic_uid, "timestamp": update["timestamp"], "data": topic_data})
         except FileNotFoundError:
             topic_file_finished = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}_finished.json")
             try:
                 with open(topic_file_finished, "r") as f: topic_data = json.load(f)
-                
                 updates_data.append({"session_uid": session_uid, "topic_uid": topic_uid, "timestamp": update["timestamp"], "data": topic_data, "finished": True})
             except FileNotFoundError: continue
     
     updated_topics = []
-
     return JSONResponse(status_code=200, content={"updates": updates_data, "count": len(updates_data)})
 
 @app.get("/get-topic-data")
@@ -271,12 +254,9 @@ async def get_topic_data(session_uid: str, topic_uid: str): #Get data for a spec
     if not os.path.exists(topic_file):
         topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}_finished.json")
         if not os.path.exists(topic_file): return JSONResponse(status_code=404, content={"error": f"Topic {topic_uid} not found"})
-    
     with open(topic_file, "r") as f: topic_data = json.load(f)
-    
     return JSONResponse(status_code=200, content={"session_uid": session_uid, "topic_uid": topic_uid, "data": topic_data})
 
 @app.get("/status")
 async def status(): return JSONResponse(status_code=200, content={"status": "running", "processing_active": processing_active, "check_interval": CHECK_INTERVAL, "pending_updates": len(updated_topics)}) #Get server status
-
 # Start mit: uvicorn combined_server:app --reload
