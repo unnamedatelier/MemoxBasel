@@ -154,6 +154,9 @@ async def add_input(request: Request):
     # Append new text
     content["inputs"].append(text)
     
+    # Mark as unchecked so it gets reprocessed with the new input
+    content["checked"] = False
+    
     # Write updated content
     with open(topic_file, "w") as f:
         json.dump(content, f, indent=2)

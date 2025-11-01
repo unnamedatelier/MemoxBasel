@@ -127,7 +127,7 @@ def load_inputs_from_json(filename):
         data = json.load(f)
     return data.get('inputs', [])
 
-def update_json_file(filename, data):
+def update_json_file(filename, data, processed_input_count):
     """Update JSON file with categorization results"""
     try:
         with open(filename) as f:
@@ -136,7 +136,15 @@ def update_json_file(filename, data):
         existing_data = {}
     
     existing_data['formatted'] = data
-    existing_data['checked'] = True  # Mark as checked AFTER successful processing
+    
+    # Only mark as checked if no new inputs were added during processing
+    current_input_count = len(existing_data.get('inputs', []))
+    if current_input_count == processed_input_count:
+        existing_data['checked'] = True
+    else:
+        # New inputs were added during processing, keep it unchecked for reprocessing
+        existing_data['checked'] = False
+        print(f"  ⚠ Input count changed during processing ({processed_input_count} -> {current_input_count}), will reprocess")
     
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
@@ -171,6 +179,9 @@ def run(filename):
         print("No inputs found in JSON file")
         return
     
+    # Remember how many inputs we're processing
+    input_count = len(inputs)
+    
     results = categorize_texts(inputs)
     
     print("\nCategorization Results:")
@@ -182,7 +193,7 @@ def run(filename):
         if len(texts) > 3:
             print(f"   ... and {len(texts) - 3} more")
     
-    update_json_file(filename, results)
+    update_json_file(filename, results, input_count)
 
 
 def run_all():
