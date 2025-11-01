@@ -1,9 +1,12 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { OpenAI } = require('openai');
 const app = express();
 const PORT = 3000;
 const BACKEND_URL = 'http://localhost:8000';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -723,6 +726,36 @@ app.post('/update', (req, res) => {
     } catch (error) {
         console.error('Error processing update:', error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+app.post('/chat', async (req, res) => {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message is required.' });
+
+    try {
+    const response = await openai.chat.completions.create({
+        model: "gpt-5-nano",
+        messages: [
+            {
+                role: "system",
+                content: `You are an expert at summarizing conferences and discussions. 
+                        You will receive a large JSON containing detailed information about topics, speakers, 
+                        contributions, and discussions. 
+                        Your task is to produce a clear and structured summary that highlights the key points, 
+                        decisions, and important topics. 
+                        Only return the summary text—do not include explanations, JSON, code, or any other content.`
+            },
+            { role: "user", content: message }
+        ]
+    });
+
+        const output = response.choices[0].message.content;
+        res.json({ response: output });
+    } catch (err) {
+        console.error('GPT error:', err);
+        res.status(500).json({ error: 'Failed to get response from GPT' });
     }
 });
 
