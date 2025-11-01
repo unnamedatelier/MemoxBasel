@@ -578,6 +578,22 @@ updateTopics();
     </svg>
 </button>
 
+<!-- QR Code Button (Admin only) -->
+<button class="qr-code-button" onclick="showQRCode()" title="Show QR Code">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+        <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+        <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/>
+        <rect x="5" y="5" width="3" height="3" fill="currentColor"/>
+        <rect x="16" y="5" width="3" height="3" fill="currentColor"/>
+        <rect x="5" y="16" width="3" height="3" fill="currentColor"/>
+        <rect x="14" y="14" width="2" height="2" fill="currentColor"/>
+        <rect x="18" y="14" width="2" height="2" fill="currentColor"/>
+        <rect x="14" y="18" width="2" height="2" fill="currentColor"/>
+        <rect x="18" y="18" width="2" height="2" fill="currentColor"/>
+    </svg>
+</button>
+
 <!-- AI Summary Button -->
 <button class="ai-summary-button" onclick="generateAISummary()" title="Generate AI Summary">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -642,6 +658,22 @@ updateTopics();
         </div>
         <div class="modal-body">
             <div id="ai-summary-content" style="white-space: pre-wrap; line-height: 1.8; font-size: 15px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal-overlay" id="qr-code-modal" onclick="closeQRCodeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
+        <div class="modal-header">
+            <h2>📱 Session QR Code</h2>
+            <button class="modal-close" onclick="closeQRCodeModal()">✕</button>
+        </div>
+        <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; padding: 32px;">
+            <div id="qr-code-container" style="background: white; padding: 16px; border-radius: 12px; margin-bottom: 16px;"></div>
+            <p style="text-align: center; color: var(--text-secondary); font-size: 14px; margin: 0;">
+                Scan to access this session
+            </p>
         </div>
     </div>
 </div>
@@ -988,11 +1020,52 @@ function refreshModalContent() {
         });
 }
 
-// Add keyboard support for AI Summary modal
+// QR Code functions
+function showQRCode() {
+    const container = document.getElementById('qr-code-container');
+    container.innerHTML = ''; // Clear previous QR code
+    
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+    
+    // Get the current URL without /admin
+    const currentUrl = window.location.href.replace('/admin', '');
+    
+    // Generate QR code
+    QRCode.toCanvas(canvas, currentUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+        }
+    }, function (error) {
+        if (error) {
+            console.error(error);
+            showMessage('Failed to generate QR code', 'error');
+            return;
+        }
+        document.getElementById('qr-code-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+}
+
+function closeQRCodeModal(event) {
+    if (event && event.target.id !== 'qr-code-modal') return;
+    document.getElementById('qr-code-modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Add keyboard support for AI Summary and QR Code modals
 document.addEventListener('keydown', (e) => {
     const aiModal = document.getElementById('ai-summary-modal');
+    const qrModal = document.getElementById('qr-code-modal');
+    
     if (aiModal.classList.contains('active') && e.key === 'Escape') {
         closeAISummaryModal();
+    } else if (qrModal.classList.contains('active') && e.key === 'Escape') {
+        closeQRCodeModal();
     }
 });
 
