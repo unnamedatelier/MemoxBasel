@@ -7,7 +7,7 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ordner leeren beim Booten
+// Clear folder on startup
 const sessionsPath = path.join(__dirname, 'public', 'sessions');
 if (fs.existsSync(sessionsPath)) {
     fs.rmSync(sessionsPath, { recursive: true, force: true });
@@ -16,47 +16,47 @@ fs.mkdirSync(sessionsPath, { recursive: true });
 
 app.post('/createsession', (req, res) => {
     const { name } = req.body;
-    if (!name) return res.status(400).send('Kein Name angegeben.');
+    if (!name) return res.status(400).send('No name provided.');
 
     const dirPath = path.join(sessionsPath, name);
     if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
-    // Mockup-Daten
+    // Mock data
     const topicsData = {
-        "Reiseplanung": {
-            "Flüge buchen": [
-                "Überprüfe Preise auf Skyscanner",
-                "Direkt bei Airline buchen für besseren Service",
-                "Frühzeitig buchen spart Geld"
+        "Travel Planning": {
+            "Booking Flights": [
+                "Check prices on Skyscanner",
+                "Book directly with airlines for better service",
+                "Booking early saves money"
             ],
-            "Unterkünfte": [
-                "Hotels mit Stornierungsmöglichkeit wählen",
-                "Airbnb Bewertungen prüfen",
-                "Zentrale Lage bevorzugen"
+            "Accommodations": [
+                "Choose hotels with cancellation options",
+                "Check Airbnb reviews",
+                "Prefer central locations"
             ]
         },
-        "Projektarbeit": {
-            "Meeting-Vorbereitung": [
-                "Agenda vorher verschicken",
-                "Fragen sammeln",
-                "Rollen verteilen"
+        "Project Work": {
+            "Meeting Preparation": [
+                "Send agenda in advance",
+                "Collect questions",
+                "Assign roles"
             ],
-            "Dokumentation": [
-                "Struktur mit Überschriften festlegen",
-                "Screenshots einfügen",
-                "Quellen korrekt angeben"
+            "Documentation": [
+                "Organize structure with headings",
+                "Include screenshots",
+                "Cite sources correctly"
             ]
         },
-        "Freizeitgestaltung": {
-            "Sport": [
-                "Fitnessstudio dreimal die Woche",
-                "Joggen im Park",
-                "Neue Sportarten ausprobieren"
+        "Leisure Activities": {
+            "Sports": [
+                "Go to the gym three times a week",
+                "Jog in the park",
+                "Try new sports"
             ],
-            "Kunst & Kultur": [
-                "Museumsbesuche planen",
-                "Theaterkarten rechtzeitig kaufen",
-                "Leseliste aktualisieren"
+            "Arts & Culture": [
+                "Plan museum visits",
+                "Buy theater tickets early",
+                "Update reading list"
             ]
         }
     };
@@ -66,7 +66,7 @@ app.post('/createsession', (req, res) => {
 
     const fileContent = `
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -118,13 +118,13 @@ setInterval(updateTopics, 5000);
 
     fs.writeFileSync(path.join(dirPath, 'index.html'), fileContent);
 
-    // Admin-Seite
+    // Admin page
     const adminPath = path.join(dirPath, 'admin');
     if (!fs.existsSync(adminPath)) fs.mkdirSync(adminPath, { recursive: true });
 
     const adminContent = `
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -134,8 +134,8 @@ setInterval(updateTopics, 5000);
 <body>
 <h1>Admin - ${name}</h1>
 <div>
-<input type="text" id="topicInput" placeholder="Neues Topic">
-<button onclick="createTopic()">Topic erstellen</button>
+<input type="text" id="topicInput" placeholder="New Topic">
+<button onclick="createTopic()">Create Topic</button>
 </div>
 <div id="topics-container"></div>
 
@@ -176,7 +176,7 @@ function updateTopics() {
 
 function createTopic() {
     const topicName = document.getElementById('topicInput').value;
-    if (!topicName) return alert('Bitte Topic Name eingeben.');
+    if (!topicName) return alert('Please enter a topic name.');
     fetch('/createTopic', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -197,12 +197,12 @@ setInterval(updateTopics, 5000);
 
     fs.writeFileSync(path.join(adminPath, 'index.html'), adminContent);
 
-    res.send(`Session "${name}" und Admin-Seite erstellt.`);
+    res.send(`Session "${name}" and admin page created.`);
 });
 
 app.post('/createTopic', (req, res) => {
     const { sessionId, topicName } = req.body;
-    if (!sessionId || !topicName) return res.status(400).send('Session ID und Topic Name erforderlich.');
+    if (!sessionId || !topicName) return res.status(400).send('Session ID and Topic Name required.');
 
     const topicsFilePath = path.join(sessionsPath, sessionId, 'topics.json');
 
@@ -213,20 +213,20 @@ app.post('/createTopic', (req, res) => {
         }
 
         data.topics[topicName] = {
-            "Allgemeines": [
-                "Neuer Eintrag 1",
-                "Neuer Eintrag 2",
-                "Neuer Eintrag 3"
+            "General": [
+                "New Entry 1",
+                "New Entry 2",
+                "New Entry 3"
             ]
         };
 
         fs.writeFileSync(topicsFilePath, JSON.stringify(data, null, 2));
-        res.json({ success: true, message: `Topic "${topicName}" wurde erstellt.` });
+        res.json({ success: true, message: `Topic "${topicName}" created.` });
     } catch (error) {
-        res.status(500).send('Fehler beim Speichern: ' + error.message);
+        res.status(500).send('Error saving: ' + error.message);
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server läuft auf http://localhost:${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}`);
 });
