@@ -82,12 +82,34 @@ async def create_topic(request: Request):
     
     # Create topic file
     topic_file = os.path.join(session_path, f"{topic_uid}.json")
+    topic_data = {
+        "session_uid": session_uid, 
+        "topic_uid": topic_uid, 
+        "inputs": [], 
+        "checked": False
+    }
     with open(topic_file, "w") as f:
-        json.dump({"session_uid": session_uid, "topic_uid": topic_uid, "inputs": [], "checked": False}, f, indent=2)
+        json.dump(topic_data, f, indent=2)
+    
+    # Send topic data to frontend with placeholder message
+    # Frontend expects: topics = { "TopicName": { "SubtopicName": ["items"] } }
+    initial_formatted = {
+        topic_uid: {
+            "Waiting for inputs": [
+                "Add inputs to see categorized content."
+            ]
+        }
+    }
+    forward_success = forward_to_frontend(session_uid, initial_formatted)
     
     return JSONResponse(
         status_code=200,
-        content={"message": f"Topic {topic_uid} created in session {session_uid}", "session_uid": session_uid, "topic_uid": topic_uid}
+        content={
+            "message": f"Topic {topic_uid} created in session {session_uid}", 
+            "session_uid": session_uid, 
+            "topic_uid": topic_uid,
+            "forwarded_to_frontend": forward_success
+        }
     )
 
 @app.post("/input")
@@ -221,8 +243,13 @@ async def notify_update(request: Request):
         
         # Check if formatted data exists
         if "formatted" in topic_data:
+            # Frontend expects nested structure: { "topic_uid": { "subtopic": ["items"] } }
+            # Wrap the formatted data with topic_uid as the parent key
+            nested_formatted = {
+                topic_uid: topic_data["formatted"]
+            }
             # Forward to server.js
-            forward_success = forward_to_frontend(session_uid, topic_data["formatted"])
+            forward_success = forward_to_frontend(session_uid, nested_formatted)
             
             return JSONResponse(
                 status_code=200,
