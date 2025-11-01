@@ -54,7 +54,7 @@ async def create_topic(request: Request):
     # Create topic file
     topic_file = os.path.join(session_path, f"{topic_uid}.json")
     with open(topic_file, "w") as f:
-        json.dump({"session_uid": session_uid, "topic_uid": topic_uid, "inputs": []}, f, indent=2)
+        json.dump({"session_uid": session_uid, "topic_uid": topic_uid, "inputs": [], "checked": False}, f, indent=2)
     
     return JSONResponse(
         status_code=200,

@@ -142,6 +142,7 @@ def update_json_file(filename, data):
         existing_data = {}
     
     existing_data['formatted'] = data
+    existing_data['checked'] = True  # Mark as checked after processing
     
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
@@ -163,13 +164,37 @@ def run(filename):
         update_json_file(filename, results)
 
 def run_all():
-
-    for folder in os.listdir("code/backend/sessions_folder"):
-
-        for file in os.listdir(f"code/backend/sessions_folder/{folder}"):
+    sessions_path = "code/backend/sessions_folder"
+    
+    if not os.path.exists(sessions_path):
+        print(f"Sessions folder not found: {sessions_path}")
+        return
+    
+    for folder in os.listdir(sessions_path):
+        folder_path = os.path.join(sessions_path, folder)
+        
+        if not os.path.isdir(folder_path):
+            continue
+        
+        for file in os.listdir(folder_path):
             if file.endswith(".json") and not file.endswith("_finished.json"):
-                print(f"code/backend/sessions_folder/{folder}/{file}")
-                run(filename=f"code/backend/sessions_folder/{folder}/{file}")
+                file_path = os.path.join(folder_path, file)
+                
+                # Check if file needs processing
+                try:
+                    with open(file_path) as f:
+                        data = json.load(f)
+                    
+                    # Only process if checked is False or doesn't exist
+                    if data.get('checked', False):
+                        print(f"Skipping (already checked): {file_path}")
+                        continue
+                    
+                    print(f"Processing: {file_path}")
+                    run(filename=file_path)
+                    
+                except Exception as e:
+                    print(f"Error processing {file_path}: {e}")
 
 
 if __name__ == "__main__":
