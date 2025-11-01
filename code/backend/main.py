@@ -186,7 +186,7 @@ def run(filename):
         update_json_file(filename, results)
 
 def run_all():
-    sessions_path = "code/backend/sessions_folder"
+    sessions_path = "sessions_folder"
     
     if not os.path.exists(sessions_path):
         print(f"Sessions folder not found: {sessions_path}")

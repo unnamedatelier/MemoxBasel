@@ -56,24 +56,7 @@ def test_add_inputs(session_uid, topics):
     print_section("TEST 3: Add Inputs to Topics")
     
     # Math inputs
-    math_inputs = [
-        "Pythagorean theorem: a² + b² = c²",
-        "Quadratic formula: x = (-b ± √(b²-4ac)) / 2a",
-        "Area of circle: A = πr²",
-        "Derivative of x²: 2x",
-        "Integral of 1/x: ln|x| + C"
-    ]
-    
-    print(f"Adding {len(math_inputs)} inputs to {topics[0]}...")
-    for text in math_inputs:
-        response = requests.post(
-            f"{BASE_URL}/input",
-            json={"session_uid": session_uid, "topic_uid": topics[0], "text": text}
-        )
-        print(f"  Added: {text[:50]}... - Status: {response.status_code}")
-        time.sleep(0.2)
-    
-    print()
+   ##
     
     # Science inputs
     science_inputs = [

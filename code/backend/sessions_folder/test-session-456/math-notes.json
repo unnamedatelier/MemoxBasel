@@ -1,9 +1,0 @@
-{
-  "session_uid": "test-session-456",
-  "topic_uid": "math-notes",
-  "inputs": [
-    "Pythagorean theorem: a\u00b2 + b\u00b2 = c\u00b2",
-    "Quadratic formula: x = (-b \u00b1 \u221a(b\u00b2-4ac)) / 2a"
-  ],
-  "checked": false
-}
