@@ -36,9 +36,28 @@ app.post('/createConference', (req, res) => {
 <h1>${name}</h1>
 </body>
 </html>`;
-
     fs.writeFileSync(filePath, content);
-    res.send(`Conference "${name}" erstellt.`);
+
+    // Admin-Ordner + Index
+    const adminPath = path.join(dirPath, 'admin');
+    if (!fs.existsSync(adminPath)) {
+        fs.mkdirSync(adminPath, { recursive: true });
+    }
+    const adminFilePath = path.join(adminPath, 'index.html');
+    const adminContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - ${name}</title>
+</head>
+<body>
+<h1>Admin - ${name}</h1>
+</body>
+</html>`;
+    fs.writeFileSync(adminFilePath, adminContent);
+
+    res.send(`Conference "${name}" und Admin-Seite erstellt.`);
 });
 
 app.post('/addInput', (req, res) => {
