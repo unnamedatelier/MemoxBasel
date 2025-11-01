@@ -4,20 +4,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - test</title>
+<title>goon</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<h1>Admin - test</h1>
-<div>
-<input type="text" id="topicInput" placeholder="New Topic">
-<button onclick="createTopic()">Create Topic</button>
-</div>
+<h1>goon</h1>
 <div id="topics-container"></div>
-
 <script>
+function sendInput(topic, subtopic) {
+    const inputField = document.getElementById(`input-${topic}-${subtopic}`);
+    const input = inputField.value.trim();
+    if (!input) return;
+
+    fetch('/input', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sessionId: 'goon',
+            topic: topic,
+            subtopic: subtopic,
+            input: input
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        inputField.value = '';
+    })
+    .catch(err => console.error(err));
+}
+
 function updateTopics() {
-    fetch('/sessions/test/topics.json')
+    fetch('/sessions/goon/topics.json')
         .then(res => res.json())
         .then(data => {
             const container = document.getElementById('topics-container');
@@ -64,23 +81,6 @@ function updateTopics() {
         })
         .catch(err => console.error(err));
 }
-
-function createTopic() {
-    const topicName = document.getElementById('topicInput').value;
-    if (!topicName) return alert('Please enter a topic name.');
-    fetch('/createTopic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: 'test', topicName })
-    })
-    .then(res => res.json())
-    .then(() => {
-        document.getElementById('topicInput').value = '';
-        updateTopics();
-    })
-    .catch(err => console.error(err));
-}
-
 updateTopics();
 setInterval(updateTopics, 5000);
 </script>
