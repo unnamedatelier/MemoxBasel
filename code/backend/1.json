@@ -1,3 +1,23 @@
-{"uid": 1, 
-"inputs": ["Apple released a new iPhone with advanced AI features.", "The government introduced new climate policies.", "Google is investing heavily in artificial intelligence.", "Researchers discovered a new treatment for diabetes.", "Microsoft announced updates to its cloud platform.", "Climate change continues to affect global weather patterns.", "New AI tools are transforming the tech industry."], 
-"formatted": {"investing": ["Google is investing heavily in artificial intelligence."], "continues": ["Climate change continues to affect global weather patterns."], "new": ["Apple released a new iPhone with advanced AI features.", "The government introduced new climate policies.", "Researchers discovered a new treatment for diabetes."], "change": ["Microsoft announced updates to its cloud platform.", "New AI tools are transforming the tech industry."]}}
+{
+  "uid": 1,
+  "inputs": [
+    "Marketing strategies for social media platforms have evolved significantly over the past decade.",
+    "Seller financing options are becoming more popular in real estate transactions.",
+    "Stock market volatility can impact investment strategies and portfolio management.",
+    "Shareholder activism is influencing corporate governance practices worldwide.",
+    "Debt consolidation services help individuals manage multiple debts more effectively.",
+    "Digital marketing trends are shaping the way businesses reach their target audiences."
+  ],
+  "formatted": {
+    "Finance And Economics": [
+      "Stock market volatility can impact investment strategies and portfolio management.",
+      "Shareholder activism is influencing corporate governance practices worldwide.",
+      "Debt consolidation services help individuals manage multiple debts more effectively."
+    ],
+    "Marketing": [
+      "Marketing strategies for social media platforms have evolved significantly over the past decade.",
+      "Seller financing options are becoming more popular in real estate transactions.",
+      "Digital marketing trends are shaping the way businesses reach their target audiences."
+    ]
+  }
+}
