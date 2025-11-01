@@ -77,6 +77,16 @@ app.post('/createsession', async (req, res) => {
     </svg>
 </button>
 
+<!-- QR Code Button -->
+<button class="qr-code-button" onclick="showQRCode()" title="Show QR Code">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 3H9V9H3V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 3H21V9H15V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3 15H9V21H3V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 15H21V21H15V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+</button>
+
 <!-- AI Summary Button -->
 <button class="ai-summary-button" onclick="generateAISummary()" title="Generate AI Summary">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -138,6 +148,20 @@ app.post('/createsession', async (req, res) => {
         </div>
         <div class="modal-body">
             <div id="ai-summary-content" style="white-space: pre-wrap; line-height: 1.8; font-size: 15px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal-overlay" id="qr-code-modal" onclick="closeQRCodeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h2>📱 QR Code</h2>
+            <button class="modal-close" onclick="closeQRCodeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="qr-code-container" style="display: flex; justify-content: center; align-items: center; padding: 20px;"></div>
+            <p style="text-align: center; margin-top: 20px; color: var(--text-secondary);">Scan to open the session</p>
         </div>
     </div>
 </div>
@@ -465,11 +489,48 @@ function refreshModalContent() {
         });
 }
 
-// Add keyboard support for AI Summary modal
+// QR Code functions
+function showQRCode() {
+    const container = document.getElementById('qr-code-container');
+    container.innerHTML = ''; // Clear previous QR code
+    
+    // Get the current URL without /admin
+    const currentUrl = window.location.href.replace('/admin', '');
+    
+    // Generate QR code
+    QRCode.toCanvas(container, currentUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+            dark: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
+            light: getComputedStyle(document.documentElement).getPropertyValue('--background').trim()
+        }
+    }, function (error) {
+        if (error) {
+            console.error(error);
+            showMessage('Failed to generate QR code', 'error');
+            return;
+        }
+        document.getElementById('qr-code-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+}
+
+function closeQRCodeModal(event) {
+    if (event && event.target.id !== 'qr-code-modal') return;
+    document.getElementById('qr-code-modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Add keyboard support for modals
 document.addEventListener('keydown', (e) => {
     const aiModal = document.getElementById('ai-summary-modal');
+    const qrModal = document.getElementById('qr-code-modal');
+    
     if (aiModal.classList.contains('active') && e.key === 'Escape') {
         closeAISummaryModal();
+    } else if (qrModal.classList.contains('active') && e.key === 'Escape') {
+        closeQRCodeModal();
     }
 });
 
@@ -492,6 +553,7 @@ updateTopics();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - ${name}</title>
 <link rel="stylesheet" href="/style.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
 </head>
 <body>
 <!-- Dark Mode Toggle -->
