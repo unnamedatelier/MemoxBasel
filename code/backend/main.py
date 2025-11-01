@@ -5,6 +5,7 @@ import json
 import re
 from collections import Counter
 import os
+import requests
 
 
 def categorize_texts(inputs, n_clusters=None):
@@ -146,6 +147,27 @@ def update_json_file(filename, data):
     
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
+    
+    # Notify server about the update
+    notify_server(existing_data.get('session_uid'), existing_data.get('topic_uid'))
+
+def notify_server(session_uid, topic_uid):
+    """Send notification to server that a topic has been updated"""
+    if not session_uid or not topic_uid:
+        return
+    
+    try:
+        response = requests.post(
+            "http://127.0.0.1:8000/notify-update",
+            json={"session_uid": session_uid, "topic_uid": topic_uid},
+            timeout=2
+        )
+        if response.status_code == 200:
+            print(f"  ✓ Notified server about update: {session_uid}/{topic_uid}")
+        else:
+            print(f"  ✗ Failed to notify server: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"  ✗ Could not connect to server: {e}")
 
 def run(filename):
     inputs = load_inputs_from_json(filename)

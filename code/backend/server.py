@@ -3,12 +3,16 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import json
 import os
+from datetime import datetime
 
 app = FastAPI()
 
 # Ensure sessions_folder exists
 SESSIONS_FOLDER = "sessions_folder"
 os.makedirs(SESSIONS_FOLDER, exist_ok=True)
+
+# Store updated topics queue
+updated_topics = []
 
 @app.get("/init")
 async def init(session_uid: str):
@@ -161,6 +165,113 @@ async def end_topic(request: Request):
             "topic_uid": topic_uid,
             "new_filename": f"{topic_uid}_finished.json"
         }
+    )
+
+@app.post("/notify-update")
+async def notify_update(request: Request):
+    """Receive notification that a topic has been processed"""
+    data = await request.json()
+    session_uid = data.get("session_uid")
+    topic_uid = data.get("topic_uid")
+    
+    if not session_uid or not topic_uid:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "session_uid and topic_uid are required"}
+        )
+    
+    # Add to updated topics queue
+    updated_topics.append({
+        "session_uid": session_uid,
+        "topic_uid": topic_uid,
+        "timestamp": datetime.now().isoformat()
+    })
+    
+    return JSONResponse(
+        status_code=200,
+        content={"message": "Update notification received", "session_uid": session_uid, "topic_uid": topic_uid}
+    )
+
+@app.get("/get-updates")
+async def get_updates():
+    """Get all updated topics and their data"""
+    global updated_topics
+    
+    if not updated_topics:
+        return JSONResponse(
+            status_code=200,
+            content={"updates": [], "count": 0}
+        )
+    
+    # Retrieve data for all updated topics
+    updates_data = []
+    for update in updated_topics:
+        session_uid = update["session_uid"]
+        topic_uid = update["topic_uid"]
+        topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}.json")
+        
+        try:
+            with open(topic_file, "r") as f:
+                topic_data = json.load(f)
+            
+            updates_data.append({
+                "session_uid": session_uid,
+                "topic_uid": topic_uid,
+                "timestamp": update["timestamp"],
+                "data": topic_data
+            })
+        except FileNotFoundError:
+            # File might have been renamed to _finished
+            topic_file_finished = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}_finished.json")
+            try:
+                with open(topic_file_finished, "r") as f:
+                    topic_data = json.load(f)
+                
+                updates_data.append({
+                    "session_uid": session_uid,
+                    "topic_uid": topic_uid,
+                    "timestamp": update["timestamp"],
+                    "data": topic_data,
+                    "finished": True
+                })
+            except FileNotFoundError:
+                continue
+    
+    # Clear the queue after sending
+    updated_topics = []
+    
+    return JSONResponse(
+        status_code=200,
+        content={"updates": updates_data, "count": len(updates_data)}
+    )
+
+@app.get("/get-topic-data")
+async def get_topic_data(session_uid: str, topic_uid: str):
+    """Get data for a specific topic"""
+    if not session_uid or not topic_uid:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "session_uid and topic_uid are required"}
+        )
+    
+    topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}.json")
+    
+    # Check if topic file exists
+    if not os.path.exists(topic_file):
+        # Try with _finished suffix
+        topic_file = os.path.join(SESSIONS_FOLDER, session_uid, f"{topic_uid}_finished.json")
+        if not os.path.exists(topic_file):
+            return JSONResponse(
+                status_code=404,
+                content={"error": f"Topic {topic_uid} not found in session {session_uid}"}
+            )
+    
+    with open(topic_file, "r") as f:
+        topic_data = json.load(f)
+    
+    return JSONResponse(
+        status_code=200,
+        content={"session_uid": session_uid, "topic_uid": topic_uid, "data": topic_data}
     )
 
 # Server starten mit:
