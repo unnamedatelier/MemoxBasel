@@ -23,13 +23,11 @@ def categorize_texts(inputs, n_clusters=None):
     for cluster_id in range(n_clusters):
         cluster_texts = [inputs[i] for i in range(len(inputs)) if labels[i] == cluster_id]
         
-        if not cluster_texts:
-            continue
+        if not cluster_texts: continue
         
         title = generate_title_with_gpt(cluster_texts, client)
         
-        # Handle duplicate titles
-        original_title, counter = title, 1
+        original_title, counter = title, 1 #Handle duplicate titles
         while title in results:
             title = f"{original_title} ({counter})"
             counter += 1
@@ -39,8 +37,7 @@ def categorize_texts(inputs, n_clusters=None):
     return results
 
 
-def generate_title_with_gpt(texts, client):
-    # Prepare the text sample (limit to avoid token overflow)
+def generate_title_with_gpt(texts, client): #Prepare the text sample (limit to avoid token overflow)
     sample_texts = texts[:5] if len(texts) > 5 else texts
     combined_text = "\n".join(f"- {text[:200]}" for text in sample_texts)
     
@@ -91,8 +88,7 @@ def extract_fallback_title(texts):
         'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'been', 'be',
         'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
         'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those',
-        'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them', 'their', 'its'
-    }
+        'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them', 'their', 'its'}
     
     word_freq = Counter()
     for word in words:
@@ -172,7 +168,6 @@ def run(filename):
     
     update_json_file(filename, results, input_count)
 
-
 def run_all(): #Process all unchecked JSON files in sessions folder
     sessions_path = "sessions_folder"
     
@@ -195,8 +190,7 @@ def run_all(): #Process all unchecked JSON files in sessions folder
                     with open(file_path) as f:
                         data = json.load(f)
                     
-                    # Only process if checked is False or missing (new files default to False = unchecked)
-                    if data.get('checked', False) == True:
+                    if data.get('checked', False) == True: #Only process if checked is False or missing (new files default to False = unchecked)
                         skipped_count += 1
                         continue
                     
