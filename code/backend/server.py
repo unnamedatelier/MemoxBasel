@@ -12,11 +12,11 @@ import requests
 import re
 from datetime import datetime
 import asyncio
+import math
 
 load_dotenv()
 
 app = FastAPI()
-
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 #Configuration
@@ -33,8 +33,7 @@ def categorize_texts(inputs, n_clusters=None):
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = embedder.encode(inputs)
     
-    if n_clusters is None:
-        n_clusters = max(2, int(len(inputs)/2))
+    if n_clusters is None: n_clusters = max(2, int(math.log(len(inputs))/math.log(2)))
     
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     labels, client, results = kmeans.fit_predict(embeddings), OpenAI(api_key=OPENAI_API_KEY), {}
@@ -95,8 +94,7 @@ def extract_fallback_title(texts): #Fallback title generation if GPT fails
     combined = " ".join(texts)
     words = combined.lower().split()
     
-    stop_words = {
-        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
         'of', 'with', 'by', 'from', 'is', 'are', 'was', 'were', 'been', 'be',
         'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
         'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those',
@@ -105,8 +103,7 @@ def extract_fallback_title(texts): #Fallback title generation if GPT fails
     word_freq = Counter()
     for word in words:
         clean = re.sub(r'[^\w]', '', word)
-        if clean not in stop_words and len(clean) > 3 and not clean.isdigit():
-            word_freq[clean] += 1
+        if clean not in stop_words and len(clean) > 3 and not clean.isdigit(): word_freq[clean] += 1
     
     if not word_freq: return "General Topics"
     
@@ -122,8 +119,7 @@ def process_topic_file(file_path):
         if data.get('checked', False): return False
         
         inputs = data.get('inputs', [])
-        if not inputs:
-            return False
+        if not inputs: return False
         
         print(f"\nProcessing: {file_path}")
         input_count = len(inputs)
@@ -178,17 +174,14 @@ async def background_processor(): #Background task to process unchecked files
             for folder in os.listdir(SESSIONS_FOLDER):
                 folder_path = os.path.join(SESSIONS_FOLDER, folder)
                 
-                if not os.path.isdir(folder_path):
-                    continue
+                if not os.path.isdir(folder_path): continue
                 
                 for file in os.listdir(folder_path):
-                    if file.endswith(".json") and not file.endswith("_finished.json"):
+                    if file.endswith(".json") and not file.endswith("_finished.json"): 
                         file_path = os.path.join(folder_path, file)
                         
-                        if process_topic_file(file_path):
-                            processed += 1
-                        else:
-                            skipped += 1
+                        if process_topic_file(file_path): processed += 1
+                        else: skipped += 1
             
             if processed > 0 or skipped > 0: print(f"Summary: {processed} processed, {skipped} skipped")
             

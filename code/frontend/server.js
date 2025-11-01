@@ -15,6 +15,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Store inputs temporarily (will be replaced with proper storage later)
 let receivedInputs = [];
 
+// Active users tracking: { sessionName: Set of user IDs }
+const activeUsers = new Map();
+const userHeartbeats = new Map(); // { userId: { sessionName, timestamp } }
+
+// Cleanup inactive users every 15 seconds
+setInterval(() => {
+    const now = Date.now();
+    const timeout = 20000; // 20 seconds timeout
+    
+    userHeartbeats.forEach((data, userId) => {
+        if (now - data.timestamp > timeout) {
+            // Remove inactive user
+            const session = activeUsers.get(data.sessionName);
+            if (session) {
+                session.delete(userId);
+                if (session.size === 0) {
+                    activeUsers.delete(data.sessionName);
+                }
+            }
+            userHeartbeats.delete(userId);
+        }
+    });
+}, 15000);
+
 // Clear folder on startup
 const sessionsPath = path.join(__dirname, 'public', 'sessions');
 if (fs.existsSync(sessionsPath)) {
@@ -53,6 +77,7 @@ app.post('/createsession', async (req, res) => {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${name} - Session</title>
 <link rel="stylesheet" href="/style.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
 </head>
 <body>
 <!-- Dark Mode Toggle -->
@@ -77,19 +102,9 @@ app.post('/createsession', async (req, res) => {
     </svg>
 </button>
 
-<!-- QR Code Button -->
-<button class="qr-code-button" onclick="showQRCode()" title="Show QR Code">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 3H9V9H3V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M15 3H21V9H15V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M3 15H9V21H3V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M15 15H21V21H15V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-</button>
-
 <!-- AI Summary Button -->
 <button class="ai-summary-button" onclick="generateAISummary()" title="Generate AI Summary">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" fill="currentColor"/>
         <path d="M19 4L19.5 6.5L22 7L19.5 7.5L19 10L18.5 7.5L16 7L18.5 6.5L19 4Z" fill="currentColor"/>
         <path d="M19 14L19.5 16.5L22 17L19.5 17.5L19 20L18.5 17.5L16 17L18.5 16.5L19 14Z" fill="currentColor"/>
@@ -98,8 +113,19 @@ app.post('/createsession', async (req, res) => {
 
 <div class="topics-page">
     <div class="page-header">
-        <h1>${name}</h1>
-        <p class="subtitle">View and contribute to topics</p>
+        <div class="header-content">
+            <h1>${name}</h1>
+            <p class="subtitle">View and contribute to topics</p>
+        </div>
+        <div class="user-counter" id="user-counter">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="user-count">0</span>
+        </div>
     </div>
     
     <div class="topics-grid" id="topics-grid"></div>
@@ -212,6 +238,32 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
 });
+
+// User tracking
+const userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+
+function sendHeartbeat() {
+    fetch('/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sessionName: '${name}',
+            userId: userId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('user-count').textContent = data.count;
+    })
+    .catch(err => console.error('Heartbeat failed:', err));
+}
+
+// Send heartbeat immediately and then every 10 seconds
+sendHeartbeat();
+setInterval(sendHeartbeat, 10000);
+
+// Update count when window gets focus
+window.addEventListener('focus', sendHeartbeat);
 
 function showMessage(text, type) {
     const container = document.getElementById('messageContainer');
@@ -605,7 +657,18 @@ updateTopics();
 
 <div class="topics-page">
     <div class="admin-header">
-        <h1>Admin - ${name}</h1>
+        <div class="admin-header-top">
+            <h1>Admin - ${name}</h1>
+            <div class="user-counter" id="user-counter">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span id="user-count">0</span>
+            </div>
+        </div>
         <div class="admin-form">
             <input type="text" id="topicInput" placeholder="Enter new topic name" autocomplete="off">
             <button onclick="createTopic()">Create Topic</button>
@@ -713,6 +776,32 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
 });
+
+// User tracking
+const userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+
+function sendHeartbeat() {
+    fetch('/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sessionName: '${name}',
+            userId: userId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('user-count').textContent = data.count;
+    })
+    .catch(err => console.error('Heartbeat failed:', err));
+}
+
+// Send heartbeat immediately and then every 10 seconds
+sendHeartbeat();
+setInterval(sendHeartbeat, 10000);
+
+// Update count when window gets focus
+window.addEventListener('focus', sendHeartbeat);
 
 function showMessage(text, type) {
     const container = document.getElementById('messageContainer');
@@ -1166,6 +1255,37 @@ app.post('/chat', async (req, res) => {
         console.error('GPT error:', err);
         res.status(500).json({ error: 'Failed to get response from GPT' });
     }
+});
+
+// User tracking endpoints
+app.post('/heartbeat', (req, res) => {
+    const { sessionName, userId } = req.body;
+    
+    if (!sessionName || !userId) {
+        return res.status(400).json({ error: 'Session name and user ID required' });
+    }
+    
+    // Update heartbeat
+    userHeartbeats.set(userId, {
+        sessionName,
+        timestamp: Date.now()
+    });
+    
+    // Add user to session
+    if (!activeUsers.has(sessionName)) {
+        activeUsers.set(sessionName, new Set());
+    }
+    activeUsers.get(sessionName).add(userId);
+    
+    // Return current count
+    const count = activeUsers.get(sessionName).size;
+    res.json({ count });
+});
+
+app.get('/usercount/:sessionName', (req, res) => {
+    const { sessionName } = req.params;
+    const count = activeUsers.has(sessionName) ? activeUsers.get(sessionName).size : 0;
+    res.json({ count });
 });
 
 // Conference-specific 404 handler

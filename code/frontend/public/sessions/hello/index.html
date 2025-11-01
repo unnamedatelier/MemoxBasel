@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>test - Session</title>
+<title>hello - Session</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -51,8 +51,19 @@
 
 <div class="topics-page">
     <div class="page-header">
-        <h1>test</h1>
-        <p class="subtitle">View and contribute to topics</p>
+        <div class="header-content">
+            <h1>hello</h1>
+            <p class="subtitle">View and contribute to topics</p>
+        </div>
+        <div class="user-counter" id="user-counter">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="user-count">0</span>
+        </div>
     </div>
     
     <div class="topics-grid" id="topics-grid"></div>
@@ -166,6 +177,32 @@ document.addEventListener('DOMContentLoaded', () => {
     updateThemeIcon(savedTheme);
 });
 
+// User tracking
+const userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+
+function sendHeartbeat() {
+    fetch('/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sessionName: 'hello',
+            userId: userId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('user-count').textContent = data.count;
+    })
+    .catch(err => console.error('Heartbeat failed:', err));
+}
+
+// Send heartbeat immediately and then every 10 seconds
+sendHeartbeat();
+setInterval(sendHeartbeat, 10000);
+
+// Update count when window gets focus
+window.addEventListener('focus', sendHeartbeat);
+
 function showMessage(text, type) {
     const container = document.getElementById('messageContainer');
     if (!container) return;
@@ -197,7 +234,7 @@ function sendInput() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            session_uid: 'test',
+            session_uid: 'hello',
             topic_uid: currentTopic,
             text: input
         })
@@ -214,7 +251,7 @@ function sendInput() {
 }
 
 function updateTopics() {
-    fetch('/sessions/test/topics.json')
+    fetch('/sessions/hello/topics.json')
         .then(res => res.json())
         .then(data => {
             topicsData = data.topics || {};
@@ -364,7 +401,7 @@ document.addEventListener('keydown', (e) => {
 // Refresh Modal Function
 function refreshModal() {
     if (currentTopic) {
-        fetch('/getTopics/test')
+        fetch('/getTopics/hello')
             .then(res => res.json())
             .then(data => {
                 topicsData = data;
@@ -424,7 +461,7 @@ async function generateAISummary() {
 
 // Refresh Modal Content Function - reloads topics and reopens modal
 function refreshModalContent() {
-    fetch('/sessions/test/topics.json')
+    fetch('/sessions/hello/topics.json')
         .then(res => res.json())
         .then(data => {
             topicsData = data.topics || {};
