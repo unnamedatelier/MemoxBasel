@@ -198,4 +198,18 @@ def run_all():
 
 
 if __name__ == "__main__":
-    run_all()
+    import time
+    
+    print("Starting periodic processing (every 10 seconds)...")
+    print("Press Ctrl+C to stop\n")
+    
+    try:
+        while True:
+            print(f"\n{'='*60}")
+            print(f"Running check at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"{'='*60}")
+            run_all()
+            print(f"\nNext check in 10 seconds...")
+            time.sleep(10)
+    except KeyboardInterrupt:
+        print("\n\nStopping periodic processing. Goodbye!")
