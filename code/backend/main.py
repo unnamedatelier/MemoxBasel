@@ -66,7 +66,7 @@ Category title:"""
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-nano",
             messages=[
                 {"role": "system", "content": "You are a text categorization expert. Generate concise, accurate category titles."},
                 {"role": "user", "content": prompt}
