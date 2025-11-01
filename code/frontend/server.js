@@ -19,6 +19,9 @@ let receivedInputs = [];
 const activeUsers = new Map();
 const userHeartbeats = new Map(); // { userId: { sessionName, timestamp } }
 
+// Define sessionsPath early so it can be used in intervals
+const sessionsPath = path.join(__dirname, 'public', 'sessions');
+
 // Cleanup inactive users every 15 seconds
 setInterval(() => {
     const now = Date.now();
@@ -39,8 +42,26 @@ setInterval(() => {
     });
 }, 15000);
 
+// Cleanup empty sessions every minute
+setInterval(() => {
+    if (!fs.existsSync(sessionsPath)) return;
+    
+    const sessions = fs.readdirSync(sessionsPath);
+    
+    sessions.forEach(sessionName => {
+        const userCount = activeUsers.has(sessionName) ? activeUsers.get(sessionName).size : 0;
+        
+        if (userCount === 0) {
+            const sessionPath = path.join(sessionsPath, sessionName);
+            if (fs.existsSync(sessionPath)) {
+                fs.rmSync(sessionPath, { recursive: true, force: true });
+                console.log(`Deleted empty session: ${sessionName}`);
+            }
+        }
+    });
+}, 60000); // Every 60 seconds (1 minute)
+
 // Clear folder on startup
-const sessionsPath = path.join(__dirname, 'public', 'sessions');
 if (fs.existsSync(sessionsPath)) {
     fs.rmSync(sessionsPath, { recursive: true, force: true });
 }
@@ -78,6 +99,7 @@ app.post('/createsession', async (req, res) => {
 <title>${name} - Session</title>
 <link rel="stylesheet" href="/style.css">
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <!-- Dark Mode Toggle -->
@@ -139,7 +161,7 @@ app.post('/createsession', async (req, res) => {
 
 <!-- Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
-    <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 1400px; width: 90vw;">
         <div class="modal-header">
             <h2 id="modal-title">Topic</h2>
             <div class="modal-nav">
@@ -155,11 +177,21 @@ app.post('/createsession', async (req, res) => {
                 <button class="modal-close" onclick="closeModal()">✕</button>
             </div>
         </div>
-        <div class="modal-body">
-            <div class="subtopics-list" id="subtopics-list"></div>
-            <div class="input-container topic-input" id="topic-input-container">
-                <input type="text" id="modal-input" placeholder="Add input to this topic..." />
-                <button onclick="sendInput()">Send</button>
+        <div class="modal-body" style="display: flex; gap: 30px; max-height: 75vh;">
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div style="flex: 1; overflow-y: auto; padding-right: 15px; margin-bottom: 15px;">
+                    <div class="subtopics-list" id="subtopics-list"></div>
+                </div>
+                <div class="input-container topic-input" id="topic-input-container" style="margin-top: auto;">
+                    <input type="text" id="modal-input" placeholder="Add input to this topic..." />
+                    <button onclick="sendInput()">Send</button>
+                </div>
+            </div>
+            <div style="width: 500px; min-width: 500px; display: flex; flex-direction: column; padding: 30px; background: var(--card-background); border-radius: 12px; overflow-y: auto;">
+                <h3 style="margin: 0 0 30px 0; color: var(--text-primary); font-size: 20px; font-weight: 600; text-align: center;">Topic Overview</h3>
+                <div style="width: 100%; aspect-ratio: 1;">
+                    <canvas id="topic-radar-chart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -197,6 +229,7 @@ let topicsData = {};
 let currentTopicIndex = 0;
 let topicKeys = [];
 let currentTopic = null;
+let radarChart = null;
 
 // Dark Mode
 function toggleTheme() {
@@ -541,6 +574,131 @@ function refreshModalContent() {
         });
 }
 
+// Radar Chart Update Function
+function updateRadarChart(subtopics) {
+    const canvas = document.getElementById('topic-radar-chart');
+    if (!canvas) return;
+    
+    // Destroy existing chart if it exists
+    if (radarChart) {
+        radarChart.destroy();
+    }
+    
+    // If no subtopics, show empty state
+    if (!subtopics || Object.keys(subtopics).length === 0) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+    }
+    
+    // Prepare data for radar chart
+    const labels = [];
+    const dataValues = [];
+    
+    // Find max input count for chart scale
+    let maxInputs = 0;
+    Object.values(subtopics).forEach(inputs => {
+        if (inputs.length > maxInputs) {
+            maxInputs = inputs.length;
+        }
+    });
+    
+    // Build labels and data - use actual counts
+    Object.entries(subtopics).forEach(([subtopic, inputs]) => {
+        labels.push(subtopic);
+        dataValues.push(inputs.length);
+    });
+    
+    // Get current theme colors
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const primaryColor = isDark ? 'rgb(96, 165, 250)' : 'rgb(59, 130, 246)';
+    const backgroundColor = isDark ? 'rgba(96, 165, 250, 0.2)' : 'rgba(59, 130, 246, 0.2)';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
+    
+    // Calculate appropriate step size based on max value
+    const stepSize = Math.ceil(maxInputs / 5);
+    const chartMax = Math.ceil(maxInputs / stepSize) * stepSize || 5;
+    
+    // Create radar chart
+    const ctx = canvas.getContext('2d');
+    radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Input Count',
+                data: dataValues,
+                fill: true,
+                backgroundColor: backgroundColor,
+                borderColor: primaryColor,
+                pointBackgroundColor: primaryColor,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: primaryColor,
+                borderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: chartMax,
+                    ticks: {
+                        display: false,
+                        stepSize: stepSize,
+                        color: textColor,
+                        backdropColor: 'transparent',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    },
+                    pointLabels: {
+                        color: textColor,
+                        font: {
+                            size: 16,
+                            weight: '500'
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: textColor,
+                    bodyColor: textColor,
+                    borderColor: primaryColor,
+                    borderWidth: 1,
+                    padding: 12,
+                    bodyFont: {
+                        size: 15
+                    },
+                    titleFont: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            const count = context.parsed.r;
+                            return \`\${count} input\${count !== 1 ? 's' : ''}\`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 // QR Code functions
 function showQRCode() {
     const container = document.getElementById('qr-code-container');
@@ -586,10 +744,11 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Initialize topics on page load
 updateTopics();
 </script>
 </body>
-</html>`;
+</html>`.replace('updateNavigationButtons();\n    document.getElementById', 'updateNavigationButtons();\n    updateRadarChart(subtopics);\n    document.getElementById');
 
         fs.writeFileSync(path.join(dirPath, 'index.html'), fileContent);
 
@@ -606,6 +765,7 @@ updateTopics();
 <title>Admin - ${name}</title>
 <link rel="stylesheet" href="/style.css">
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <!-- Dark Mode Toggle -->
@@ -686,7 +846,7 @@ updateTopics();
 
 <!-- Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
-    <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 1400px; width: 90vw;">
         <div class="modal-header">
             <h2 id="modal-title">Topic</h2>
             <div class="modal-nav">
@@ -702,11 +862,21 @@ updateTopics();
                 <button class="modal-close" onclick="closeModal()">✕</button>
             </div>
         </div>
-        <div class="modal-body">
-            <div class="subtopics-list" id="subtopics-list"></div>
-            <div class="input-container topic-input" id="topic-input-container">
-                <input type="text" id="modal-input" placeholder="Add input to this topic..." />
-                <button onclick="sendInput()">Send</button>
+        <div class="modal-body" style="display: flex; gap: 30px; max-height: 75vh;">
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div style="flex: 1; overflow-y: auto; padding-right: 15px; margin-bottom: 15px;">
+                    <div class="subtopics-list" id="subtopics-list"></div>
+                </div>
+                <div class="input-container topic-input" id="topic-input-container" style="margin-top: auto;">
+                    <input type="text" id="modal-input" placeholder="Add input to this topic..." />
+                    <button onclick="sendInput()">Send</button>
+                </div>
+            </div>
+            <div style="width: 500px; min-width: 500px; display: flex; flex-direction: column; padding: 30px; background: var(--card-background); border-radius: 12px; overflow-y: auto;">
+                <h3 style="margin: 0 0 30px 0; color: var(--text-primary); font-size: 20px; font-weight: 600; text-align: center;">Topic Overview</h3>
+                <div style="width: 100%; aspect-ratio: 1;">
+                    <canvas id="topic-radar-chart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -746,6 +916,7 @@ let topicsData = {};
 let currentTopicIndex = 0;
 let topicKeys = [];
 let currentTopic = null;
+let radarChart = null;
 
 // Dark Mode
 function toggleTheme() {
@@ -1109,6 +1280,131 @@ function refreshModalContent() {
         });
 }
 
+// Radar Chart Update Function
+function updateRadarChart(subtopics) {
+    const canvas = document.getElementById('topic-radar-chart');
+    if (!canvas) return;
+    
+    // Destroy existing chart if it exists
+    if (radarChart) {
+        radarChart.destroy();
+    }
+    
+    // If no subtopics, show empty state
+    if (!subtopics || Object.keys(subtopics).length === 0) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+    }
+    
+    // Prepare data for radar chart
+    const labels = [];
+    const dataValues = [];
+    
+    // Find max input count for chart scale
+    let maxInputs = 0;
+    Object.values(subtopics).forEach(inputs => {
+        if (inputs.length > maxInputs) {
+            maxInputs = inputs.length;
+        }
+    });
+    
+    // Build labels and data - use actual counts
+    Object.entries(subtopics).forEach(([subtopic, inputs]) => {
+        labels.push(subtopic);
+        dataValues.push(inputs.length);
+    });
+    
+    // Get current theme colors
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const primaryColor = isDark ? 'rgb(96, 165, 250)' : 'rgb(59, 130, 246)';
+    const backgroundColor = isDark ? 'rgba(96, 165, 250, 0.2)' : 'rgba(59, 130, 246, 0.2)';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    const textColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
+    
+    // Calculate appropriate step size based on max value
+    const stepSize = Math.ceil(maxInputs / 5);
+    const chartMax = Math.ceil(maxInputs / stepSize) * stepSize || 5;
+    
+    // Create radar chart
+    const ctx = canvas.getContext('2d');
+    radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Input Count',
+                data: dataValues,
+                fill: true,
+                backgroundColor: backgroundColor,
+                borderColor: primaryColor,
+                pointBackgroundColor: primaryColor,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: primaryColor,
+                borderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: chartMax,
+                    ticks: {
+                        display: false,
+                        stepSize: stepSize,
+                        color: textColor,
+                        backdropColor: 'transparent',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    },
+                    pointLabels: {
+                        color: textColor,
+                        font: {
+                            size: 16,
+                            weight: '500'
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: textColor,
+                    bodyColor: textColor,
+                    borderColor: primaryColor,
+                    borderWidth: 1,
+                    padding: 12,
+                    bodyFont: {
+                        size: 15
+                    },
+                    titleFont: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            const count = context.parsed.r;
+                            return \`\${count} input\${count !== 1 ? 's' : ''}\`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 // QR Code functions
 function showQRCode() {
     const container = document.getElementById('qr-code-container');
@@ -1158,10 +1454,11 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Initialize topics on page load
 updateTopics();
 </script>
 </body>
-</html>`;
+</html>`.replace('updateNavigationButtons();\n    document.getElementById', 'updateNavigationButtons();\n    updateRadarChart(subtopics);\n    document.getElementById');
 
         fs.writeFileSync(path.join(adminPath, 'index.html'), adminContent);
         res.json({ success: true });
