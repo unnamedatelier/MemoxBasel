@@ -4,10 +4,30 @@
             box-sizing: border-box;
         }
 
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
-            padding: 60px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: #000000;
+            padding: 80px 20px;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
@@ -21,53 +41,79 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 15% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 70%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.08) 0%, transparent 50%);
+            animation: glow 8s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
             pointer-events: none;
         }
 
         h1 {
             text-align: center;
             color: #ffffff;
-            margin-bottom: 60px;
-            font-size: 42px;
+            margin-bottom: 70px;
+            font-size: 52px;
             font-weight: 700;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.03em;
             position: relative;
             z-index: 1;
-            text-shadow: 0 2px 20px rgba(99, 102, 241, 0.3);
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #60a5fa 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 6s ease infinite;
+            filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.5));
         }
 
         h1::after {
             content: '';
             display: block;
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, #6366f1, #8b5cf6);
-            margin: 20px auto 0;
-            border-radius: 2px;
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6, #ec4899);
+            background-size: 200% 100%;
+            margin: 24px auto 0;
+            border-radius: 3px;
+            animation: gradientShift 4s ease infinite;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
         }
 
         .join-create {
-            max-width: 680px;
+            max-width: 700px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 28px;
             position: relative;
             z-index: 1;
         }
 
         .session-form {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 40px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(80px) saturate(200%);
+            -webkit-backdrop-filter: blur(80px) saturate(200%);
+            border: 1.5px solid rgba(255, 255, 255, 0.18);
+            padding: 45px;
+            border-radius: 28px;
             box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                0 8px 32px rgba(0, 0, 0, 0.37),
+                0 1px 2px rgba(255, 255, 255, 0.1) inset,
+                0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
         }
@@ -78,45 +124,74 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.5), 
+                transparent);
+            opacity: 0.8;
+        }
+
+        .session-form::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 28px;
+            padding: 1.5px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.25), 
+                rgba(255, 255, 255, 0.05), 
+                rgba(139, 92, 246, 0.2));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.4s;
+            pointer-events: none;
         }
 
         .session-form:hover {
-            transform: translateY(-2px);
-            border-color: rgba(99, 102, 241, 0.2);
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
             box-shadow: 
-                0 12px 48px rgba(0, 0, 0, 0.4),
-                0 0 0 1px rgba(99, 102, 241, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+                0 12px 48px rgba(0, 0, 0, 0.45),
+                0 2px 4px rgba(255, 255, 255, 0.15) inset,
+                0 0 80px rgba(139, 92, 246, 0.15);
         }
 
-        .session-form:hover::before {
+        .session-form:hover::after {
             opacity: 1;
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 16px 20px;
+            padding: 18px 24px;
             font-size: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             color: #ffffff;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             font-weight: 400;
+            position: relative;
+            box-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.1) inset,
+                0 1px 1px rgba(255, 255, 255, 0.06);
         }
 
         input[type="text"]:focus {
             outline: none;
-            border-color: rgba(99, 102, 241, 0.4);
-            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
             box-shadow: 
-                0 0 0 4px rgba(99, 102, 241, 0.1),
-                0 4px 16px rgba(99, 102, 241, 0.2);
+                0 0 0 4px rgba(139, 92, 246, 0.15),
+                0 8px 24px rgba(139, 92, 246, 0.2),
+                0 1px 2px rgba(255, 255, 255, 0.1) inset;
+            transform: translateY(-1px);
         }
 
         input[type="text"]::placeholder {
@@ -125,73 +200,111 @@
 
         button {
             width: 100%;
-            padding: 16px 24px;
-            font-size: 16px;
+            padding: 18px 28px;
+            font-size: 15px;
             font-weight: 600;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.9) 0%, 
+                rgba(59, 130, 246, 0.9) 50%, 
+                rgba(236, 72, 153, 0.9) 100%);
+            background-size: 200% 200%;
+            background-position: 0% 50%;
             color: white;
-            border: none;
-            border-radius: 12px;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                        background-position 1.2s ease-out;
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             box-shadow: 
-                0 4px 16px rgba(99, 102, 241, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                0 8px 24px rgba(139, 92, 246, 0.4),
+                0 1px 2px rgba(255, 255, 255, 0.2) inset;
+            letter-spacing: 0.01em;
         }
 
         button::before {
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, 
+                rgba(255, 255, 255, 0.25) 0%, 
+                transparent 100%);
+            border-radius: 16px 16px 0 0;
         }
 
         button:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.01);
+            background-position: 100% 50%;
             box-shadow: 
-                0 8px 24px rgba(99, 102, 241, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-        }
-
-        button:hover::before {
-            left: 100%;
+                0 12px 32px rgba(139, 92, 246, 0.5),
+                0 0 40px rgba(139, 92, 246, 0.3),
+                0 2px 4px rgba(255, 255, 255, 0.25) inset;
         }
 
         button:active {
-            transform: translateY(0);
+            transform: translateY(-1px) scale(1);
             box-shadow: 
-                0 2px 8px rgba(99, 102, 241, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                0 4px 16px rgba(139, 92, 246, 0.4),
+                0 1px 2px rgba(255, 255, 255, 0.2) inset;
+        }
+
+        .message {
+            max-width: 700px;
+            margin: 30px auto 0;
+            padding: 20px 28px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.5s ease;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .message.success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1.5px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.2);
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
         }
 
         @media (max-width: 600px) {
             body {
-                padding: 40px 20px;
+                padding: 50px 20px;
             }
 
             h1 {
-                font-size: 32px;
-                margin-bottom: 40px;
+                font-size: 38px;
+                margin-bottom: 50px;
             }
 
             .session-form {
-                padding: 28px;
+                padding: 32px;
             }
 
             input[type="text"],
             button {
-                padding: 14px 18px;
+                padding: 16px 20px;
             }
         }
 
         @media (prefers-reduced-motion: reduce) {
-            * {
+            *, *::before, *::after {
                 animation: none !important;
                 transition: none !important;
             }
