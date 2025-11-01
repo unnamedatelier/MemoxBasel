@@ -4,9 +4,21 @@ echo Starting MemoxBasel servers...
 REM Get the directory where the script is located
 set SCRIPT_DIR=%~dp0
 
-REM Start backend server in new window
+REM Setup backend virtual environment and start server
+echo Setting up backend environment...
+cd /d %SCRIPT_DIR%backend
+
+if not exist "venv" (
+    echo Creating virtual environment...
+    python -m venv venv
+)
+
+echo Installing backend dependencies...
+call venv\Scripts\activate.bat
+pip install -r requirements.txt
+
 echo Starting backend server...
-start "MemoxBasel Backend" cmd /k "cd /d %SCRIPT_DIR%backend && uvicorn server:app --reload"
+start "MemoxBasel Backend" cmd /k "cd /d %SCRIPT_DIR%backend && call venv\Scripts\activate.bat && uvicorn server:app --reload"
 
 REM Start frontend server in new window
 echo Installing frontend dependencies...

@@ -3,6 +3,7 @@
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}Starting MemoxBasel servers...${NC}"
@@ -10,9 +11,22 @@ echo -e "${BLUE}Starting MemoxBasel servers...${NC}"
 # Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Start backend server
-echo -e "${GREEN}Starting backend server...${NC}"
+# Setup backend virtual environment and start server
+echo -e "${GREEN}Setting up backend environment...${NC}"
 cd "$SCRIPT_DIR/backend"
+
+if [ ! -d "venv" ]; then
+    echo -e "${YELLOW}Creating virtual environment...${NC}"
+    python -m venv venv
+fi
+
+echo -e "${YELLOW}Activating virtual environment...${NC}"
+source venv/bin/activate
+
+echo -e "${YELLOW}Installing backend dependencies...${NC}"
+pip install -r requirements.txt
+
+echo -e "${GREEN}Starting backend server...${NC}"
 uvicorn server:app --reload &
 BACKEND_PID=$!
 
