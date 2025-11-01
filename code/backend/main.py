@@ -13,7 +13,6 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def categorize_texts(inputs, n_clusters=None):
-    """Cluster texts and generate category titles using GPT-4o-mini"""
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = embedder.encode(inputs)
     
@@ -47,8 +46,7 @@ def categorize_texts(inputs, n_clusters=None):
 
 
 def generate_title_with_gpt(texts, client):
-    """Generate a concise category title using GPT-4o-mini"""
-    
+
     # Prepare the text sample (limit to avoid token overflow)
     sample_texts = texts[:5] if len(texts) > 5 else texts
     combined_text = "\n".join(f"- {text[:200]}" for text in sample_texts)
@@ -155,7 +153,6 @@ def update_json_file(filename, data):
         existing_data = {}
     
     existing_data['formatted'] = data
-    existing_data['checked'] = True
     
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
@@ -234,6 +231,9 @@ def run_all():
                         continue
                     
                     print(f"\nProcessing: {file_path}")
+
+                    mark_as_processing(file_path)
+
                     run(filename=file_path)
                     processed_count += 1
                     
