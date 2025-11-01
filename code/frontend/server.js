@@ -5,7 +5,7 @@ const fs = require('fs');
 const { OpenAI } = require('openai');
 const app = express();
 const PORT = 3000;
-const BACKEND_URL = 'https://sessions-9ee7.onrender.com';
+const BACKEND_URL = 'http://localhost:8000';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -727,7 +727,7 @@ updateTopics();
 
 <!-- QR Code Modal -->
 <div class="modal-overlay" id="qr-code-modal" onclick="closeQRCodeModal(event)">
-    <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
         <div class="modal-header">
             <h2>📱 Session QR Code</h2>
             <button class="modal-close" onclick="closeQRCodeModal()">✕</button>
