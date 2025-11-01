@@ -32,6 +32,11 @@ div.join-create {
     justify-content: space-evenly;
 }
 
+form {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
 /* button styling */
 
 
