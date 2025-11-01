@@ -3,22 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
-    <title>Session Menu</title>
+    <title>MemoxBasel - Session Menu</title>
 </head>
 <body>
-    <h1>Session Menu</h1>
+    <!-- Dark Mode Toggle -->
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <span class="theme-icon" id="themeIcon">🌙</span>
+        <span id="themeText">Dark</span>
+    </div>
 
-    <div class="join-create">
-        <div class="session-form">
-            <input type="text" id="joinInput" placeholder="Session Name">
-            <button onclick="joinSession()">Join Session</button>
+    <!-- Message Container -->
+    <div id="messageContainer"></div>
+
+    <div class="landing-container">
+        <div class="landing-header">
+            <h1>MemoxBasel</h1>
+            <p>Connect and create collaborative sessions</p>
         </div>
-        <div class="session-form">
-            <input type="text" id="createInput" placeholder="Session Name">
-            <button onclick="createSession()">Create Session</button>
+
+        <div class="join-create">
+            <div class="session-form">
+                <h2>Join Session</h2>
+                <input type="text" id="joinInput" placeholder="Enter session name" autocomplete="off">
+                <button onclick="joinSession()">Join</button>
+            </div>
+            <div class="session-form">
+                <h2>Create Session</h2>
+                <input type="text" id="createInput" placeholder="Enter new session name" autocomplete="off">
+                <button onclick="createSession()">Create</button>
+            </div>
         </div>
     </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

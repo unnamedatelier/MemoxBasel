@@ -135,6 +135,21 @@ def load_inputs_from_json(filename):
     return data.get('inputs', [])
 
 
+def mark_as_processing(filename):
+    """Mark file as being processed immediately to prevent duplicate processing"""
+    try:
+        with open(filename) as f:
+            existing_data = json.load(f)
+    except FileNotFoundError:
+        existing_data = {}
+    
+    existing_data['checked'] = True  # Mark IMMEDIATELY when processing starts
+    
+    with open(filename, "w") as f:
+        json.dump(existing_data, f, indent=2, ensure_ascii=False)
+    
+    return existing_data
+
 def update_json_file(filename, data):
     try:
         with open(filename) as f:
@@ -143,7 +158,7 @@ def update_json_file(filename, data):
         existing_data = {}
     
     existing_data['formatted'] = data
-    existing_data['checked'] = True  # Mark as checked after processing
+    existing_data['checked'] = True  # Keep as checked
     
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
@@ -227,6 +242,11 @@ def run_all():
                                 continue
                     
                     print(f"Processing: {file_path} ({len(current_inputs)} inputs)")
+                    
+                    # WICHTIG: Markiere als "checked" SOFORT, bevor die Verarbeitung startet
+                    # Dies verhindert, dass das gleiche File mehrmals parallel verarbeitet wird
+                    mark_as_processing(file_path)
+                    
                     run(filename=file_path)
                     
                 except Exception as e:

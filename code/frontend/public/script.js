@@ -1,3 +1,37 @@
+// Dark Mode Toggle
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const icon = document.getElementById('themeIcon');
+    const text = document.getElementById('themeText');
+    
+    if (icon && text) {
+        if (theme === 'dark') {
+            icon.textContent = '☀️';
+            text.textContent = 'Light';
+        } else {
+            icon.textContent = '🌙';
+            text.textContent = 'Dark';
+        }
+    }
+}
+
+// Initialize theme on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+});
+
 function joinSession() {
     const sessionName = document
         .getElementById("joinInput")
@@ -12,6 +46,8 @@ function joinSession() {
 
 function showMessage(text, type) {
     const container = document.getElementById('messageContainer');
+    if (!container) return;
+    
     const message = document.createElement('div');
     message.className = `message ${type}`;
     message.textContent = text;
@@ -20,7 +56,11 @@ function showMessage(text, type) {
     
     setTimeout(() => {
         message.style.opacity = '0';
-        setTimeout(() => container.removeChild(message), 500);
+        setTimeout(() => {
+            if (container.contains(message)) {
+                container.removeChild(message);
+            }
+        }, 500);
     }, 3000);
 }
 
@@ -41,10 +81,16 @@ function createSession() {
         },
         body: JSON.stringify({ name: sessionName }),
     })
-        .then((response) => response.text())
+        .then((response) => response.json())
         .then((result) => {
-            alert(result);
-            window.location.href = `/sessions/${sessionName}/admin`;
+            if (result.success) {
+                showMessage('Session created successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = `/sessions/${sessionName}/admin`;
+                }, 1000);
+            } else {
+                showMessage('Failed to create session', 'error');
+            }
         })
         .catch((error) => {
             showMessage('Error while creating a session', 'error');
@@ -71,13 +117,13 @@ function createTopic(sessionId) {
         .then((response) => response.json())
         .then((result) => {
             if (result.success) {
-                alert(result.message);
+                showMessage('Topic created successfully!', 'success');
                 document.getElementById("topicInput").value = "";
             } else {
-                alert("Fehler: " + result.message);
+                showMessage('Error: ' + result.message, 'error');
             }
         })
         .catch((error) => {
-            alert("Fehler beim Erstellen des Topics: " + error);
+            showMessage('Error creating topic: ' + error, 'error');
         });
 }
