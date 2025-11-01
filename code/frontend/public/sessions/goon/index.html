@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sssss</title>
+    <title>goon</title>
     <script src="/script.js"></script>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>sssss</h1>
+    <h1>goon</h1>
     <div id="topics-container">
         <!-- Topics werden hier dynamisch eingefügt -->
     </div>
 
     <script>
         function updateTopics() {
-            fetch('/sessions/sssss/topics.json')
+            fetch('/sessions/goon/topics.json')
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById('topics-container');
@@ -40,7 +40,7 @@
                         container.appendChild(topicDiv);
                     }
                 })
-                .catch(error => console.error('Fehler beim Laden der Topics:', error));
+                .catch(error => console.error('Error while creating Topics:', error));
         }
 
         // Initial laden und alle 5 Sekunden aktualisieren

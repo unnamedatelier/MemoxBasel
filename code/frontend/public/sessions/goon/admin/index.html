@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - sssss</title>
+    <title>Admin - goon</title>
     <script src="/script.js"></script>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1>Admin - sssss</h1>
+    <h1>Admin - goon</h1>
     <div class="topic-creation">
         <input type="text" id="topicInput" placeholder="Topic Name">
-        <button onclick="createTopic('sssss')">Topic erstellen</button>
+        <button onclick="createTopic('goon')">Topic erstellen</button>
     </div>
     <div id="topics-container">
         <!-- Topics werden hier dynamisch eingefügt -->
@@ -19,7 +19,7 @@
 
     <script>
         function updateTopics() {
-            fetch('/sessions/sssss/topics.json')
+            fetch('/sessions/goon/topics.json')
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById('topics-container');
