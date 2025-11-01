@@ -214,7 +214,7 @@ app.post('/createsession', async (req, res) => {
 <div class="modal-overlay" id="qr-code-modal" onclick="closeQRCodeModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h2>📱 QR Code</h2>
+            <h2>QR Code</h2>
             <button class="modal-close" onclick="closeQRCodeModal()">✕</button>
         </div>
         <div class="modal-body">
@@ -899,7 +899,7 @@ updateTopics();
 <div class="modal-overlay" id="qr-code-modal" onclick="closeQRCodeModal(event)">
     <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
         <div class="modal-header">
-            <h2>📱 Session QR Code</h2>
+            <h2>Session QR Code</h2>
             <button class="modal-close" onclick="closeQRCodeModal()">✕</button>
         </div>
         <div class="modal-body" style="display: flex; flex-direction: column; align-items: center; padding: 32px;">
