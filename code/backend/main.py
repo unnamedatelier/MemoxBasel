@@ -128,7 +128,7 @@ def update_json_file(data, filename="code/backend/1.json"):
     with open(filename, "w") as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
 
-def run(uid):
+def run(uid=1):
     inputs = load_inputs_from_json(filename=f"code/backend/{uid}.json")
     
     if not inputs:
