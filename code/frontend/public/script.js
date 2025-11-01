@@ -4,10 +4,24 @@ function joinSession() {
         .value.trim()
         .replace(/\s+/g, "-");
     if (!sessionName) {
-        alert("Bitte geben Sie einen Konferenznamen ein.");
+        showMessage('Please enter a session name', 'error');
         return;
     }
     window.location.href = `/sessions/${sessionName}`;
+}
+
+function showMessage(text, type) {
+    const container = document.getElementById('messageContainer');
+    const message = document.createElement('div');
+    message.className = `message ${type}`;
+    message.textContent = text;
+    container.innerHTML = '';
+    container.appendChild(message);
+    
+    setTimeout(() => {
+        message.style.opacity = '0';
+        setTimeout(() => container.removeChild(message), 500);
+    }, 3000);
 }
 
 function createSession() {
@@ -16,7 +30,7 @@ function createSession() {
         .value.trim()
         .replace(/\s+/g, "-");
     if (!sessionName) {
-        alert("Bitte geben Sie einen Konferenznamen ein.");
+        showMessage('Please enter a session name', 'error');
         return;
     }
 
@@ -33,14 +47,14 @@ function createSession() {
             window.location.href = `/sessions/${sessionName}/admin`;
         })
         .catch((error) => {
-            alert("Fehler beim Erstellen der Konferenz: " + error);
+            showMessage('Error while creating a session', 'error');
         });
 }
 
 function createTopic(sessionId) {
     const topicName = document.getElementById("topicInput").value.trim();
     if (!topicName) {
-        alert("Bitte geben Sie einen Topic-Namen ein.");
+        showMessage('Please enter a topic name', 'error');
         return;
     }
 
