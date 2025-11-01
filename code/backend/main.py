@@ -4,9 +4,13 @@ import json
 import os
 import requests
 from openai import OpenAI
+from dotenv import load_dotenv
 
-# Add your OpenAI API key here
-OPENAI_API_KEY = "apikey"
+# Load environment variables from .env file
+load_dotenv()
+
+# Get OpenAI API key from environment variable
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def categorize_texts(inputs, n_clusters=None):
     """Cluster texts and generate category titles using GPT-4o-mini"""

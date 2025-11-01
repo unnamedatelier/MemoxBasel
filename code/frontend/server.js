@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -240,7 +241,10 @@ function openModal(index) {
     if (!subtopics || Object.keys(subtopics).length === 0) {
         subtopicsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No subtopics yet</p></div>';
     } else {
-        for (const [subtopic, inputs] of Object.entries(subtopics)) {
+        // Sortiere Subtopics nach Anzahl der Inputs (absteigend - mehr Inputs = weiter oben)
+        const sortedSubtopics = Object.entries(subtopics).sort((a, b) => b[1].length - a[1].length);
+        
+        for (const [subtopic, inputs] of sortedSubtopics) {
             const subtopicItem = document.createElement('div');
             subtopicItem.className = 'subtopic-item';
             
@@ -570,7 +574,10 @@ function openModal(index) {
     if (!subtopics || Object.keys(subtopics).length === 0) {
         subtopicsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No subtopics yet</p></div>';
     } else {
-        for (const [subtopic, inputs] of Object.entries(subtopics)) {
+        // Sortiere Subtopics nach Anzahl der Inputs (absteigend - mehr Inputs = weiter oben)
+        const sortedSubtopics = Object.entries(subtopics).sort((a, b) => b[1].length - a[1].length);
+        
+        for (const [subtopic, inputs] of sortedSubtopics) {
             const subtopicItem = document.createElement('div');
             subtopicItem.className = 'subtopic-item';
             
