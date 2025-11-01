@@ -1,0 +1,14 @@
+{
+  "uid": "test-session-123",
+  "inputs": [
+    "first input - hello world!",
+    "second input - testing the server",
+    "third input - everything works!",
+    "first input - hello world!",
+    "second input - testing the server",
+    "third input - everything works!",
+    "first input - hello world!",
+    "second input - testing the server",
+    "third input - everything works!"
+  ]
+}
