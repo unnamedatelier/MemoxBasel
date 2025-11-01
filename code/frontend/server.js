@@ -7,6 +7,9 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Store inputs temporarily (will be replaced with proper storage later)
+let receivedInputs = [];
+
 // Clear folder on startup
 const sessionsPath = path.join(__dirname, 'public', 'sessions');
 if (fs.existsSync(sessionsPath)) {
@@ -21,48 +24,9 @@ app.post('/createsession', (req, res) => {
     const dirPath = path.join(sessionsPath, name);
     if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
-    // Mock data
-    const topicsData = {
-        "Travel Planning": {
-            "Booking Flights": [
-                "Check prices on Skyscanner",
-                "Book directly with airlines for better service",
-                "Booking early saves money"
-            ],
-            "Accommodations": [
-                "Choose hotels with cancellation options",
-                "Check Airbnb reviews",
-                "Prefer central locations"
-            ]
-        },
-        "Project Work": {
-            "Meeting Preparation": [
-                "Send agenda in advance",
-                "Collect questions",
-                "Assign roles"
-            ],
-            "Documentation": [
-                "Organize structure with headings",
-                "Include screenshots",
-                "Cite sources correctly"
-            ]
-        },
-        "Leisure Activities": {
-            "Sports": [
-                "Go to the gym three times a week",
-                "Jog in the park",
-                "Try new sports"
-            ],
-            "Arts & Culture": [
-                "Plan museum visits",
-                "Buy theater tickets early",
-                "Update reading list"
-            ]
-        }
-    };
-
+    // Create empty topics file
     const topicsFilePath = path.join(dirPath, 'topics.json');
-    fs.writeFileSync(topicsFilePath, JSON.stringify({ topics: topicsData }, null, 2));
+    fs.writeFileSync(topicsFilePath, JSON.stringify({ topics: {} }, null, 2));
 
     const fileContent = `
 <!DOCTYPE html>
@@ -77,6 +41,28 @@ app.post('/createsession', (req, res) => {
 <h1>${name}</h1>
 <div id="topics-container"></div>
 <script>
+function sendInput(topic, subtopic) {
+    const inputField = document.getElementById(\`input-\${topic}-\${subtopic}\`);
+    const input = inputField.value.trim();
+    if (!input) return;
+
+    fetch('/input', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sessionId: '${name}',
+            topic: topic,
+            subtopic: subtopic,
+            input: input
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        inputField.value = '';
+    })
+    .catch(err => console.error(err));
+}
+
 function updateTopics() {
     fetch('/sessions/${name}/topics.json')
         .then(res => res.json())
@@ -103,6 +89,21 @@ function updateTopics() {
                         ul.appendChild(li);
                     });
                     subDiv.appendChild(ul);
+
+                    // Add input field and send button for each subtopic
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'input-container';
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = \`input-\${topic}-\${subtopic}\`;
+                    input.placeholder = 'Enter your input...';
+                    const sendButton = document.createElement('button');
+                    sendButton.textContent = 'Send';
+                    sendButton.onclick = () => sendInput(topic, subtopic);
+                    inputDiv.appendChild(input);
+                    inputDiv.appendChild(sendButton);
+                    subDiv.appendChild(inputDiv);
+
                     topicDiv.appendChild(subDiv);
                 }
                 container.appendChild(topicDiv);
@@ -166,6 +167,21 @@ function updateTopics() {
                         ul.appendChild(li);
                     });
                     subDiv.appendChild(ul);
+
+                    // Add input field and send button for each subtopic
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'input-container';
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = \`input-\${topic}-\${subtopic}\`;
+                    input.placeholder = 'Enter your input...';
+                    const sendButton = document.createElement('button');
+                    sendButton.textContent = 'Send';
+                    sendButton.onclick = () => sendInput(topic, subtopic);
+                    inputDiv.appendChild(input);
+                    inputDiv.appendChild(sendButton);
+                    subDiv.appendChild(inputDiv);
+
                     topicDiv.appendChild(subDiv);
                 }
                 container.appendChild(topicDiv);
@@ -183,10 +199,11 @@ function createTopic() {
         body: JSON.stringify({ sessionId: '${name}', topicName })
     })
     .then(res => res.json())
-    .then(data => {
-        alert(data.message);
+    .then(() => {
+        document.getElementById('topicInput').value = '';
         updateTopics();
-    });
+    })
+    .catch(err => console.error(err));
 }
 
 updateTopics();
@@ -196,34 +213,70 @@ setInterval(updateTopics, 5000);
 </html>`;
 
     fs.writeFileSync(path.join(adminPath, 'index.html'), adminContent);
-
-    res.send(`Session "${name}" and admin page created.`);
+    res.json({ success: true });
 });
 
 app.post('/createTopic', (req, res) => {
     const { sessionId, topicName } = req.body;
-    if (!sessionId || !topicName) return res.status(400).send('Session ID and Topic Name required.');
-
-    const topicsFilePath = path.join(sessionsPath, sessionId, 'topics.json');
+    if (!sessionId) return res.status(400).send('Session ID required.');
 
     try {
-        let data = { topics: {} };
-        if (fs.existsSync(topicsFilePath)) {
-            data = JSON.parse(fs.readFileSync(topicsFilePath, 'utf8'));
+        // Read test.json for the data
+        const testJsonPath = path.join(__dirname, 'test.json');
+        const testData = JSON.parse(fs.readFileSync(testJsonPath, 'utf8'));
+
+        if (!testData.session_uid) {
+            return res.status(400).send('No session_uid found in test.json');
         }
 
-        data.topics[topicName] = {
-            "General": [
-                "New Entry 1",
-                "New Entry 2",
-                "New Entry 3"
-            ]
-        };
+        // Read current session data using session_uid from test.json
+        const topicsFilePath = path.join(sessionsPath, testData.session_uid, 'topics.json');
+        if (!fs.existsSync(topicsFilePath)) {
+            return res.status(404).send('Session not found');
+        }
 
-        fs.writeFileSync(topicsFilePath, JSON.stringify(data, null, 2));
-        res.json({ success: true, message: `Topic "${topicName}" created.` });
+        let sessionData = JSON.parse(fs.readFileSync(topicsFilePath, 'utf8'));
+
+        // Add all topics from test.json
+        if (testData.formatted) {
+            for (const [topic, strings] of Object.entries(testData.formatted)) {
+                sessionData.topics[topic] = {
+                    [testData.topic_uid]: strings
+                };
+            }
+        }
+
+        fs.writeFileSync(topicsFilePath, JSON.stringify(sessionData, null, 2));
+        res.json({ success: true });
     } catch (error) {
         res.status(500).send('Error saving: ' + error.message);
+    }
+});
+
+// New endpoint to handle input submissions
+app.post('/input', (req, res) => {
+    const { sessionId, topic, subtopic, input } = req.body;
+    if (!sessionId || !topic || !subtopic || !input) {
+        return res.status(400).send('Missing required fields');
+    }
+
+    try {
+        // Read test.json to get session_uid
+        const testJsonPath = path.join(__dirname, 'test.json');
+        const testData = JSON.parse(fs.readFileSync(testJsonPath, 'utf8'));
+
+        // Store the input with session and topic information
+        receivedInputs.push({
+            session_uid: testData.session_uid,
+            topic_uid: testData.topic_uid,
+            input: input,
+            timestamp: new Date().toISOString()
+        });
+
+        console.log('Received input:', receivedInputs[receivedInputs.length - 1]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).send('Error processing input: ' + error.message);
     }
 });
 

@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - test</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<h1>Admin - test</h1>
+<div>
+<input type="text" id="topicInput" placeholder="New Topic">
+<button onclick="createTopic()">Create Topic</button>
+</div>
+<div id="topics-container"></div>
+
+<script>
+function updateTopics() {
+    fetch('/sessions/test/topics.json')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('topics-container');
+            container.innerHTML = '';
+            for (const [topic, subtopics] of Object.entries(data.topics)) {
+                const topicDiv = document.createElement('div');
+                topicDiv.className = 'topic';
+                const topicTitle = document.createElement('h2');
+                topicTitle.textContent = topic;
+                topicDiv.appendChild(topicTitle);
+
+                for (const [subtopic, strings] of Object.entries(subtopics)) {
+                    const subDiv = document.createElement('div');
+                    subDiv.className = 'subtopic';
+                    const subTitle = document.createElement('h3');
+                    subTitle.textContent = subtopic;
+                    subDiv.appendChild(subTitle);
+                    const ul = document.createElement('ul');
+                    strings.forEach(str => {
+                        const li = document.createElement('li');
+                        li.textContent = str;
+                        ul.appendChild(li);
+                    });
+                    subDiv.appendChild(ul);
+                    topicDiv.appendChild(subDiv);
+                }
+                container.appendChild(topicDiv);
+            }
+        })
+        .catch(err => console.error(err));
+}
+
+function createTopic() {
+    const topicName = document.getElementById('topicInput').value;
+    if (!topicName) return alert('Please enter a topic name.');
+    fetch('/createTopic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: 'test', topicName })
+    })
+    .then(res => res.json())
+    .then(() => {
+        document.getElementById('topicInput').value = '';
+        updateTopics();
+    })
+    .catch(err => console.error(err));
+}
+
+updateTopics();
+setInterval(updateTopics, 5000);
+</script>
+</body>
+</html>

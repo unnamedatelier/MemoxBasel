@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>test</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<h1>test</h1>
+<div id="topics-container"></div>
+<script>
+function sendInput(topic, subtopic) {
+    const inputField = document.getElementById(`input-${topic}-${subtopic}`);
+    const input = inputField.value.trim();
+    if (!input) return;
+
+    fetch('/input', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sessionId: 'test',
+            topic: topic,
+            subtopic: subtopic,
+            input: input
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        inputField.value = '';
+    })
+    .catch(err => console.error(err));
+}
+
+function updateTopics() {
+    fetch('/sessions/test/topics.json')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('topics-container');
+            container.innerHTML = '';
+            for (const [topic, subtopics] of Object.entries(data.topics)) {
+                const topicDiv = document.createElement('div');
+                topicDiv.className = 'topic';
+                const topicTitle = document.createElement('h2');
+                topicTitle.textContent = topic;
+                topicDiv.appendChild(topicTitle);
+
+                for (const [subtopic, strings] of Object.entries(subtopics)) {
+                    const subDiv = document.createElement('div');
+                    subDiv.className = 'subtopic';
+                    const subTitle = document.createElement('h3');
+                    subTitle.textContent = subtopic;
+                    subDiv.appendChild(subTitle);
+                    const ul = document.createElement('ul');
+                    strings.forEach(str => {
+                        const li = document.createElement('li');
+                        li.textContent = str;
+                        ul.appendChild(li);
+                    });
+                    subDiv.appendChild(ul);
+
+                    // Add input field and send button for each subtopic
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'input-container';
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `input-${topic}-${subtopic}`;
+                    input.placeholder = 'Enter your input...';
+                    const sendButton = document.createElement('button');
+                    sendButton.textContent = 'Send';
+                    sendButton.onclick = () => sendInput(topic, subtopic);
+                    inputDiv.appendChild(input);
+                    inputDiv.appendChild(sendButton);
+                    subDiv.appendChild(inputDiv);
+
+                    topicDiv.appendChild(subDiv);
+                }
+                container.appendChild(topicDiv);
+            }
+        })
+        .catch(err => console.error(err));
+}
+updateTopics();
+setInterval(updateTopics, 5000);
+</script>
+</body>
+</html>
