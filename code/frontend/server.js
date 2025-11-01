@@ -8,17 +8,17 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Ordner leeren beim Booten
-const conferencesPath = path.join(__dirname, 'public', 'conferences');
-if (fs.existsSync(conferencesPath)) {
-    fs.rmSync(conferencesPath, { recursive: true, force: true });
+const sessionsPath = path.join(__dirname, 'public', 'sessions');
+if (fs.existsSync(sessionsPath)) {
+    fs.rmSync(sessionsPath, { recursive: true, force: true });
 }
-fs.mkdirSync(conferencesPath, { recursive: true });
+fs.mkdirSync(sessionsPath, { recursive: true });
 
-app.post('/createConference', (req, res) => {
+app.post('/createsession', (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).send('Kein Name angegeben.');
 
-    const dirPath = path.join(conferencesPath, name);
+    const dirPath = path.join(sessionsPath, name);
 
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
@@ -57,7 +57,7 @@ app.post('/createConference', (req, res) => {
 </html>`;
     fs.writeFileSync(adminFilePath, adminContent);
 
-    res.send(`Conference "${name}" und Admin-Seite erstellt.`);
+    res.send(`session "${name}" und Admin-Seite erstellt.`);
 });
 
 app.post('/addInput', (req, res) => {

@@ -1,19 +1,41 @@
-function joinConference() {
-    const conferenceName = document.getElementById('joinInput').value.trim();
-    if (!conferenceName) {
+async function joinSession() {
+    const sessionName = document.getElementById('joinInput').value
+        .trim()
+        .replace(/\s+/g, '-'); // Ersetze Leerzeichen durch Bindestriche
+    
+    if (!sessionName) {
         alert('Bitte geben Sie einen Konferenznamen ein');
         return;
     }
-    // Hier können Sie später die URL basierend auf dem Konferenznamen dynamisch generieren
-    window.location.href = 'conferences/Gruppe1/';
+    window.location.href = `sessions/${sessionName}/`;
 }
 
-function createConference() {
-    const conferenceName = document.getElementById('createInput').value.trim();
-    if (!conferenceName) {
+async function createSession() {
+    const sessionName = document.getElementById('createInput').value
+        .trim()
+        .replace(/\s+/g, '-'); // Ersetze Leerzeichen durch Bindestriche
+    
+    if (!sessionName) {
         alert('Bitte geben Sie einen Konferenznamen ein');
         return;
     }
-    // Hier können Sie später die URL basierend auf dem Konferenznamen dynamisch generieren
-    window.location.href = 'conferences/Gruppe1/admin/';
+
+    try {
+        const response = await fetch('/createsession', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: sessionName })
+        });
+
+        if (!response.ok) {
+            throw new Error('Fehler beim Erstellen der Konferenz');
+        }
+
+        // Nach erfolgreicher Erstellung zur Admin-Seite weiterleiten
+        window.location.href = `sessions/${sessionName}/admin/`;
+    } catch (error) {
+        alert('Fehler: ' + error.message);
+    }
 }
