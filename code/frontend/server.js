@@ -298,6 +298,7 @@ app.post('/createTopic', (req, res) => {
 // New endpoint to receive updates from Python server
 app.post('/update', (req, res) => {
     const { session_uid, formatted } = req.body;
+    console.log(formatted)
     if (!session_uid || !formatted) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
