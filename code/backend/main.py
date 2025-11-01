@@ -6,7 +6,7 @@ import requests
 from openai import OpenAI
 
 # Add your OpenAI API key here
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "apikey"
 
 def categorize_texts(inputs, n_clusters=None):
     """Cluster texts and generate category titles using GPT-4o-mini"""
