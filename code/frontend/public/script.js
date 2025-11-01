@@ -4,7 +4,7 @@ async function joinSession() {
         .replace(/\s+/g, '-'); // Ersetze Leerzeichen durch Bindestriche
     
     if (!sessionName) {
-        alert('Bitte geben Sie einen Konferenznamen ein');
+        alert('Please enter a session name');
         return;
     }
     window.location.href = `sessions/${sessionName}/`;
@@ -16,7 +16,7 @@ async function createSession() {
         .replace(/\s+/g, '-'); // Ersetze Leerzeichen durch Bindestriche
     
     if (!sessionName) {
-        alert('Bitte geben Sie einen Konferenznamen ein');
+        alert('Please enter a session name');
         return;
     }
 
@@ -30,7 +30,7 @@ async function createSession() {
         });
 
         if (!response.ok) {
-            throw new Error('Fehler beim Erstellen der Konferenz');
+            throw new Error('Error creating session');
         }
 
         // Nach erfolgreicher Erstellung zur Admin-Seite weiterleiten
