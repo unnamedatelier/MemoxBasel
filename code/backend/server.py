@@ -29,13 +29,62 @@ os.makedirs(SESSIONS_FOLDER, exist_ok=True)
 updated_topics, processing_active = [], True #Global state
 
 #CATEGORIZATION FUNCTIONS
+def determine_cluster_count(inputs, client): #Determine optimal number of clusters using GPT
+    sample_size = min(20, len(inputs))
+    sample_texts = inputs[:sample_size]
+    combined_text = "\n".join(f"{i+1}. {text[:150]}" for i, text in enumerate(sample_texts))
+    
+    prompt = f"""Analyze these {len(inputs)} text snippets (showing first {sample_size}) and determine the optimal number of categories/clusters to organize them.
+
+Text snippets:
+{combined_text}
+
+Total number of texts: {len(inputs)}
+
+Requirements:
+- Consider the diversity and similarity of topics
+- Minimum clusters: 2
+- Maximum clusters: {min(15, len(inputs))}
+- Balance between too broad (few clusters) and too granular (many clusters)
+- Defenitely prefer broad topics, especially if there is quite some variance between texts
+- Prevent too specific topics with niche and lump together titles, which aren't technical or official terms under all costs
+- Return ONLY a single number
+
+How many distinct categories would best organize these texts?"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an expert in text categorization. Analyze the texts and determine the optimal number of categories. Respond with only a number."},
+                {"role": "user", "content": prompt},
+            ], temperature=0.1,)
+        
+        cluster_count_str = response.choices[0].message.content.strip()
+        cluster_count = int(re.search(r'\d+', cluster_count_str).group())
+        
+        # Validate and constrain the result
+        cluster_count = max(2, min(cluster_count, min(15, len(inputs))))
+        
+        print(f"  GPT suggested {cluster_count} clusters for {len(inputs)} inputs")
+        return cluster_count
+        
+    except Exception as e:
+        print(f"GPT cluster determination error: {e}, using fallback")
+        # Fallback to a reasonable default
+        fallback = max(2, min(5, len(inputs) // 3))
+        return fallback
+
 def categorize_texts(inputs, n_clusters=None): #Categorize texts using embeddings and clustering
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = embedder.encode(inputs)
-    if n_clusters is None: n_clusters = int(1.5 * math.log(len(inputs)+1) / math.log(3) + 2.1) # +1.6 +0.5 because of int
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    
+    if n_clusters is None:
+        n_clusters = determine_cluster_count(inputs, client)
     
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-    labels, client, results = kmeans.fit_predict(embeddings), OpenAI(api_key=OPENAI_API_KEY), {}
+    labels, results = kmeans.fit_predict(embeddings), {}
 
     for cluster_id in range(n_clusters):
         cluster_texts = [inputs[i] for i in range(len(inputs)) if labels[i] == cluster_id]
@@ -69,7 +118,7 @@ Requirements:
 Category title:"""
 
     try:
-        response = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": "You are a text categorization expert. Generate concise, accurate category titles."}, {"role": "user", "content": prompt}])
+        response = client.chat.completions.create(model="gpt-5-nano", messages=[{"role": "system", "content": "You are a text categorization expert. Generate concise, accurate category titles."}, {"role": "user", "content": prompt}])
         
         title = response.choices[0].message.content.strip().strip('"\'')
         title = ' '.join(word.capitalize() for word in title.split())
