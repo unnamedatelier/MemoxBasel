@@ -1,0 +1,33 @@
+{
+  "session_uid": "Generic-Company-Session",
+  "topic_uid": "Sustainability & Growth",
+  "inputs": [
+    "Customer Expectations",
+    "Risk of “spreading too thin” — doing sustainability and innovation and expansion simultaneously.",
+    "Verifying and maintaining sustainability across global suppliers is extremely challenging.",
+    "In times of market downturns or recession, sustainability budgets are often the first to be cut.",
+    "Maintaining consistent commitment under pressure requires strong leadership and discipline.",
+    "If results are not tangible or measurable, sustainability communication may appear insincere.",
+    "Shareholders may resist reduced short-term profitability.",
+    "ROI is often long-term and hard to quantify in financial terms."
+  ],
+  "checked": true,
+  "formatted": {
+    "Sustainability Risk": [
+      "Risk of “spreading too thin” — doing sustainability and innovation and expansion simultaneously.",
+      "Verifying and maintaining sustainability across global suppliers is extremely challenging.",
+      "In times of market downturns or recession, sustainability budgets are often the first to be cut.",
+      "If results are not tangible or measurable, sustainability communication may appear insincere."
+    ],
+    "Long-term Financial Strategy": [
+      "Shareholders may resist reduced short-term profitability.",
+      "ROI is often long-term and hard to quantify in financial terms."
+    ],
+    "Customer Expectations": [
+      "Customer Expectations"
+    ],
+    "Leadership Under Pressure": [
+      "Maintaining consistent commitment under pressure requires strong leadership and discipline."
+    ]
+  }
+}

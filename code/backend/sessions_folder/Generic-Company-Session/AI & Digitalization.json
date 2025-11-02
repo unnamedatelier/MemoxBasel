@@ -1,0 +1,45 @@
+{
+  "session_uid": "Generic-Company-Session",
+  "topic_uid": "AI & Digitalization",
+  "inputs": [
+    "AI-driven sensing, diagnostics, and calibration can dramatically improve precision and predictive capabilities.",
+    "Predictive maintenance and intelligent asset management increase uptime and efficiency for clients.",
+    "Automation in manufacturing and logistics reduces costs, errors, and lead times.",
+    "Staying ahead of Siemens, ABB, Yokogawa, etc., requires leadership in digital innovation.",
+    "Smart instruments enable value-added services, not just hardware sales.",
+    "Data analytics can provide customers with actionable insights beyond measurement — a shift from “sensor supplier” to “solution partner.”",
+    "Digital twins, simulations, and AI-based quality control can streamline R&D and production.",
+    "Modern digital initiatives attract top engineering and data science talent.",
+    "Expanding cloud and AI usage increases vulnerability to cyberattacks and data breaches.",
+    "Cloud platforms and AI frameworks (e.g., Azure, AWS, Google) can create unwanted dependence.",
+    "The company lacks enough in-house AI experts — recruiting and retaining them is difficult.",
+    "A digital-first shift requires retraining, cultural change, and new leadership mindsets.",
+    "Too many parallel digital initiatives can fragment resources and slow down execution."
+  ],
+  "checked": true,
+  "formatted": {
+    "Industrial Data Solutions": [
+      "Automation in manufacturing and logistics reduces costs, errors, and lead times.",
+      "Smart instruments enable value-added services, not just hardware sales.",
+      "Data analytics can provide customers with actionable insights beyond measurement — a shift from “sensor supplier” to “solution partner.”"
+    ],
+    "Cloud Ai Risks": [
+      "Expanding cloud and AI usage increases vulnerability to cyberattacks and data breaches.",
+      "Cloud platforms and AI frameworks (e.g., Azure, AWS, Google) can create unwanted dependence.",
+      "The company lacks enough in-house AI experts — recruiting and retaining them is difficult."
+    ],
+    "Ai-driven Sensing Diagnostics Calibration": [
+      "AI-driven sensing, diagnostics, and calibration can dramatically improve precision and predictive capabilities."
+    ],
+    "Digital Transformation Strategy": [
+      "Staying ahead of Siemens, ABB, Yokogawa, etc., requires leadership in digital innovation.",
+      "Digital twins, simulations, and AI-based quality control can streamline R&D and production.",
+      "Modern digital initiatives attract top engineering and data science talent.",
+      "A digital-first shift requires retraining, cultural change, and new leadership mindsets.",
+      "Too many parallel digital initiatives can fragment resources and slow down execution."
+    ],
+    "Predictive Maintenance": [
+      "Predictive maintenance and intelligent asset management increase uptime and efficiency for clients."
+    ]
+  }
+}
