@@ -23,7 +23,12 @@ FRONTEND_URL, SESSIONS_FOLDER, OPENAI_API_KEY, CHECK_INTERVAL = "http://localhos
 
 if os.path.exists(SESSIONS_FOLDER): #Clean sessions folder on startup
     import shutil
-    shutil.rmtree(SESSIONS_FOLDER)
+    try:
+        shutil.rmtree(SESSIONS_FOLDER)
+    except PermissionError:
+        print(f"Warning: Could not delete {SESSIONS_FOLDER}. Some files may be in use. Continuing anyway...")
+    except Exception as e:
+        print(f"Warning: Error cleaning {SESSIONS_FOLDER}: {e}. Continuing anyway...")
 
 os.makedirs(SESSIONS_FOLDER, exist_ok=True)
 updated_topics, processing_active = [], True #Global state
