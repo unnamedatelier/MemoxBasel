@@ -1,0 +1,29 @@
+{
+  "session_uid": "new",
+  "topic_uid": "mu",
+  "inputs": [
+    "CPE Bach",
+    "Mozart",
+    "Bach",
+    "Chopin",
+    "Apple",
+    "Banana",
+    "Carrot"
+  ],
+  "checked": true,
+  "formatted": {
+    "Bach Family Composers": [
+      "CPE Bach",
+      "Bach"
+    ],
+    "Fruits And Vegetables": [
+      "Apple",
+      "Banana",
+      "Carrot"
+    ],
+    "Classical Composers": [
+      "Mozart",
+      "Chopin"
+    ]
+  }
+}
