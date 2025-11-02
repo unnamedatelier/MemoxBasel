@@ -38,7 +38,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     background-color: var(--background);
     color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     line-height: 1.6;
     overflow-x: hidden;
 }
@@ -183,7 +183,7 @@ body {
 .session-form button {
     width: 100%;
     padding: 16px;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
     color: white;
     border: none;
     border-radius: 12px;
@@ -192,12 +192,28 @@ body {
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.session-form button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
 }
 
 .session-form button:hover {
-    background: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+}
+
+.session-form button:hover::before {
+    left: 100%;
 }
 
 .session-form button:active {
@@ -223,6 +239,28 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.03), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
 }
 
 .page-header .header-content {
@@ -255,12 +293,31 @@ body {
     font-size: 16px;
     font-weight: 600;
     animation: fadeInRight 0.6s ease;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.user-counter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(88, 86, 214, 0.05));
+    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .user-counter:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+.user-counter:hover::before {
+    opacity: 1;
 }
 
 .user-counter svg {
@@ -288,7 +345,7 @@ body {
     border-radius: 20px;
     padding: 32px 28px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 8px var(--shadow);
     position: relative;
     overflow: hidden;
@@ -304,17 +361,39 @@ body {
     height: 3px;
     background: linear-gradient(90deg, var(--primary), var(--secondary));
     transform: scaleX(0);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.topic-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(88, 86, 214, 0.05));
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
 }
 
 .topic-card:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 12px 24px var(--shadow-hover);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 16px 32px var(--shadow-hover);
     border-color: var(--primary);
 }
 
 .topic-card:hover::before {
     transform: scaleX(1);
+}
+
+.topic-card:hover::after {
+    opacity: 1;
+}
+
+.topic-card:active {
+    transform: translateY(-4px) scale(1.01);
 }
 
 .topic-card h2 {
@@ -433,7 +512,8 @@ body {
     background: var(--primary);
     color: white;
     border-color: var(--primary);
-    transform: scale(1.1);
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
 
 .modal-nav button:active,
@@ -483,7 +563,25 @@ body {
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.subtopic-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.03), rgba(88, 86, 214, 0.03));
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.subtopic-item:hover::before {
+    opacity: 1;
 }
 
 .subtopic-header {
@@ -492,12 +590,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
+    position: relative;
+    z-index: 1;
 }
 
-.subtopic-header:hover {
-    background: var(--surface-elevated);
+.subtopic-item:hover .subtopic-header {
+    transform: translateX(4px);
+}
+
+.subtopic-item:active .subtopic-header {
+    transform: translateX(2px);
 }
 
 .subtopic-header h3 {
@@ -553,12 +657,32 @@ body {
     font-size: 15px;
     line-height: 1.5;
     color: var(--text-primary);
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.input-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: linear-gradient(180deg, var(--primary), var(--secondary));
+    border-radius: 0 2px 2px 0;
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .input-item:hover {
     border-color: var(--primary);
-    box-shadow: 0 2px 8px var(--shadow);
+    box-shadow: 0 4px 12px var(--shadow);
+    transform: translateX(4px);
+    background: var(--surface-elevated);
+}
+
+.input-item:hover::before {
+    height: 60%;
 }
 
 .empty-state {
@@ -611,21 +735,37 @@ body {
 
 .input-container button {
     padding: 14px 28px;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
     color: white;
     border: none;
     border-radius: 12px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.input-container button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
 }
 
 .input-container button:hover {
-    background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+}
+
+.input-container button:hover::before {
+    left: 100%;
 }
 
 .input-container button:active {
@@ -660,12 +800,12 @@ body {
 }
 
 .refresh-button:hover {
-    transform: translateY(-4px) scale(1.1);
+    transform: translateY(-4px) scale(1.1) rotate(90deg);
     box-shadow: 0 12px 32px rgba(0, 122, 255, 0.5);
 }
 
 .refresh-button:active {
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotate(90deg);
 }
 
 /* Dark mode refresh button */
@@ -922,6 +1062,19 @@ body {
     margin-bottom: 40px;
     box-shadow: 0 2px 8px var(--shadow);
     animation: fadeInDown 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.03), transparent);
+    animation: shimmer 3s infinite;
 }
 
 .admin-header-top {
@@ -962,21 +1115,37 @@ body {
 
 .admin-form button {
     padding: 14px 32px;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
     color: white;
     border: none;
     border-radius: 12px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-form button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
 }
 
 .admin-form button:hover {
-    background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+}
+
+.admin-form button:hover::before {
+    left: 100%;
 }
 
 .admin-form button:active {
